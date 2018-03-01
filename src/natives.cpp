@@ -3,8 +3,6 @@
 typedef void(*logprintf_t)(char* format, ...);
 extern logprintf_t logprintf;
 
-AMX *gl_amx;
-
 cell AMX_NATIVE_CALL Natives::SetFixTimer(AMX *amx, cell *params)
 {
 	char *function;
@@ -13,7 +11,7 @@ cell AMX_NATIVE_CALL Natives::SetFixTimer(AMX *amx, cell *params)
 
 	int function_id;
 
-	if (amx_FindPublic(gl_amx, function, &function_id) == AMX_ERR_NONE) {
+	if (amx_FindPublic(amx, function, &function_id) == AMX_ERR_NONE) {
 		return Timer::CreateTimer(function_id, params[2], params[3]);
 	}
 	return -1;
@@ -30,7 +28,7 @@ cell AMX_NATIVE_CALL Natives::SetFixTimerEx(AMX *amx, cell *params)
 
 	int function_id;
 
-	if (amx_FindPublic(gl_amx, function, &function_id) == AMX_ERR_NONE) {
+	if (amx_FindPublic(amx, function, &function_id) == AMX_ERR_NONE) {
 		return Timer::CreateTimerEx(amx, function_id, params[2], params[3], format, params);
 	}
 	return -1;
@@ -57,6 +55,5 @@ vector<AMX_NATIVE_INFO> natives{
 
 void Natives::RegisterNatives(AMX *amx)
 {
-	gl_amx = amx;
 	amx_Register(amx, natives.data(), natives.size());
 }

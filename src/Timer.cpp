@@ -1,4 +1,5 @@
 #include "main.hpp"
+#include <cstring>
 
 typedef void(*logprintf_t)(char* format, ...);
 extern logprintf_t logprintf;
@@ -23,7 +24,9 @@ int Timer::CreateTimerEx(AMX *amx, int function_id, int end_time, bool repeat, c
 	deque<cell> deq_params;
 	cell *addr_params;
 
-	for (int i = strlen(format) - 1, offset = 5; i != -1; i--) {
+	const int offset = 5;
+
+	for (int i = strlen(format) - 1; i != -1; i--) {
 		switch (format[i])
 		{
 		case 'b':
@@ -75,9 +78,14 @@ void Timer::ProcessTimer(AMX *amx)
 	for (Timer::TimerMap::iterator iter = _timer_map.begin(); iter != _timer_map.end(); iter++) {
 		if (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - iter->second.start_time).count() > iter->second.end_time) {
 			for (const auto params : iter->second.params) amx_Push(amx, params);
+
 			amx_Exec(amx, nullptr, iter->second.function_id);
-			if (iter->second.repeat) iter->second.start_time = chrono::steady_clock::now();
-			else _timer_map.erase(iter);
+
+			if (iter->second.repeat) {
+				iter->second.start_time = chrono::steady_clock::now();
+			} else {
+				_timer_map.erase(iter);
+			}
 		}
 	}
 }

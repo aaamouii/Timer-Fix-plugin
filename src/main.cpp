@@ -28,11 +28,11 @@ logprintf_t logprintf;
 
 extern void *pAMXFunctions;
 
-AMX *global_amx;
+AMX *gAMX;
 
 PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
-	Timer::ProcessTimer(global_amx);
+	Timer::ProcessTimer(gAMX);
 }
 
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
@@ -55,6 +55,6 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 
 PLUGIN_EXPORT void PLUGIN_CALL AmxLoad(AMX *amx)
 {
-	global_amx = amx;
+	gAMX = amx;
 	Natives::RegisterNatives(amx);
 }

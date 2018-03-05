@@ -16,6 +16,7 @@ add_definitions (-DPLUGIN_NAME="${PROJECT_NAME}")
 
 add_samp_plugin(${PROJECT_NAME}
   src/amxplugin.cpp
+  src/amxplugin2.cpp
   src/Timer.cpp
   src/Timer.hpp
   src/natives.hpp

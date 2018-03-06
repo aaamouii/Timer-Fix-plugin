@@ -32,7 +32,9 @@ AMX *gAMX;
 
 PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
-	Timer::ProcessTimer(gAMX);
+	if (!Timer::ProcessTimer(gAMX)) {
+		logprintf("[Timer Fix] Timer executing failed");
+	}
 }
 
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
@@ -44,7 +46,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 {
 	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
 	logprintf = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
-	logprintf("  Timer Fix plugin v0.6 by KashCherry loaded");
+	logprintf("  Timer Fix plugin v0.7 by KashCherry loaded");
 	return true;
 }
 

@@ -4,14 +4,14 @@
 typedef void(*logprintf_t)(char* format, ...);
 extern logprintf_t logprintf;
 
-int TimersCount;
+int TimersCount = 0;
 Timer::TimerMap _timer_map;
 
 int Timer::CreateTimer(int function_id, int end_time, bool repeat)
 {
 	TimersCount++;
 
-	Timer::TimerMapItem _new_timer{ function_id,end_time - 5,chrono::steady_clock::now(),repeat };
+	Timer::TimerMapItem _new_timer{ function_id,end_time,chrono::steady_clock::now(),repeat };
 	_timer_map.insert(pair<int, Timer::TimerMapItem>(TimersCount, _new_timer));
 	
 	return TimersCount;
@@ -51,17 +51,17 @@ int Timer::CreateTimerEx(AMX *amx, int function_id, int end_time, bool repeat, c
 		}
 	}
 
-	Timer::TimerMapItem _new_timer{ function_id,end_time - 5,chrono::steady_clock::now(),repeat,deq_params };
+	Timer::TimerMapItem _new_timer{ function_id,end_time,chrono::steady_clock::now(),repeat,deq_params };
 	_timer_map.insert(pair<int, Timer::TimerMapItem>(TimersCount, _new_timer));
 	return TimersCount;
 }
 
 void Timer::DeleteTimer(const int id)
 {
-	Timer::TimerMap::const_iterator iter = _timer_map.find(id);
+	Timer::TimerMap::iterator iter = _timer_map.find(id);
 
 	if (iter != _timer_map.end()) {
-		_timer_map.erase(iter);
+		iter->second.isdestroyed = true;
 		return;
 	}
 
@@ -73,19 +73,30 @@ void Timer::DeleteAllTimers()
 	_timer_map.clear();
 }
 
-void Timer::ProcessTimer(AMX *amx)
+bool Timer::ProcessTimer(AMX *amx)
 {
-	for (Timer::TimerMap::iterator iter = _timer_map.begin(); iter != _timer_map.end(); iter++) {
-		if (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - iter->second.start_time).count() > iter->second.end_time) {
-			for (const auto params : iter->second.params) amx_Push(amx, params);
+	for (Timer::TimerMap::iterator iter = _timer_map.begin(); iter != _timer_map.end();) {
 
-			amx_Exec(amx, nullptr, iter->second.function_id);
+		if (iter->second.isdestroyed) {
+			_timer_map.erase(iter++);
+			continue;
+		}
+
+		if (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - iter->second.start_time).count() >= iter->second.end_time) {
+			for (const auto params : iter->second.params)
+				if (amx_Push(amx, params) != AMX_ERR_NONE)
+					return false;
+
+			if (amx_Exec(amx, nullptr, iter->second.function_id) != AMX_ERR_NONE)
+				return false;
 
 			if (iter->second.repeat) {
 				iter->second.start_time = chrono::steady_clock::now();
-			} else {
-				_timer_map.erase(iter);
+				iter++;
 			}
+			else
+				_timer_map.erase(iter++);
 		}
 	}
+	return true;
 }

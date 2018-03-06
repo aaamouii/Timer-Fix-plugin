@@ -18,6 +18,7 @@ public:
 		chrono::steady_clock::time_point start_time;
 		bool repeat;
 		deque<cell> params;
+		bool isdestroyed = false;
 	};
 
 	using TimerMap = map<int, TimerMapItem>;
@@ -26,6 +27,6 @@ public:
 	static int CreateTimerEx(AMX *amx, int function_id, int end_time, bool repeat, const char *format, cell *params);
 	static void DeleteTimer(const int id);
 	static void DeleteAllTimers();
-	static void ProcessTimer(AMX *amx);
+	static bool ProcessTimer(AMX *amx);
 
 };

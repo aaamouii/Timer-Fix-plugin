@@ -7,9 +7,9 @@ class Natives
 {
 public:
 
-	static cell AMX_NATIVE_CALL SetFixTimer(AMX *amx, cell *params);
-	static cell AMX_NATIVE_CALL SetFixTimerEx(AMX *amx, cell *params);
-	static cell AMX_NATIVE_CALL KillFixTimer(AMX *amx, cell *params);
+	static cell AMX_NATIVE_CALL SetTimer(AMX *amx, cell *params);
+	static cell AMX_NATIVE_CALL SetTimerEx(AMX *amx, cell *params);
+	static cell AMX_NATIVE_CALL KillTimer(AMX *amx, cell *params);
 	static cell AMX_NATIVE_CALL KillAllTimers(AMX *amx, cell *params);
 
 	static void RegisterNatives(AMX *amx);

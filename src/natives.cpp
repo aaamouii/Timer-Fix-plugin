@@ -72,8 +72,17 @@ cell AMX_NATIVE_CALL Natives::KillAllTimers(AMX *amx, cell *params)
 	return 1;
 }
 
+cell AMX_NATIVE_CALL Natives::IsValidTimer(AMX *amx, cell *params)
+{
+	if (Timer::IsValidTimer(params[1])) {
+		return 1;
+	}
+	return 0;
+}
+
 vector<AMX_NATIVE_INFO> natives{
-	{"KillAllTimers",Natives::KillAllTimers}
+	{"KillAllTimers",Natives::KillAllTimers},
+	{"IsValidTimer",Natives::IsValidTimer}
 };
 
 void Natives::RegisterNatives(AMX *amx)

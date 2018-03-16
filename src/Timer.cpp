@@ -10,10 +10,14 @@ Timer::TimerMap _timer_map;
 int Timer::CreateTimer(int function_id, int end_time, bool repeat)
 {
 	TimersCount++;
+	Timer::TimerMapItem *_new_timer = new Timer::TimerMapItem;
 
-	Timer::TimerMapItem _new_timer{ function_id,end_time,chrono::steady_clock::now(),repeat };
-	_timer_map.insert(pair<int, Timer::TimerMapItem>(TimersCount, _new_timer));
-	
+	_new_timer->function_id = function_id;
+	_new_timer->end_time = end_time;
+	_new_timer->repeat = repeat;
+	_new_timer->start_time = chrono::steady_clock::now();
+
+	_timer_map.insert(pair<int, Timer::TimerMapItem>(TimersCount, *_new_timer));
 	return TimersCount;
 }
 
@@ -25,8 +29,7 @@ int Timer::CreateTimerEx(AMX *amx, int function_id, int end_time, bool repeat, c
 	cell *addr_params;
 
 	const int offset = 5;
-
-	for (int i = strlen(format) - 1; i != -1; i--) {
+	for (int i = strlen(format); --i != -1;) {
 		switch (format[i])
 		{
 		case 'b':
@@ -51,15 +54,21 @@ int Timer::CreateTimerEx(AMX *amx, int function_id, int end_time, bool repeat, c
 		}
 	}
 
-	Timer::TimerMapItem _new_timer{ function_id,end_time,chrono::steady_clock::now(),repeat,deq_params };
-	_timer_map.insert(pair<int, Timer::TimerMapItem>(TimersCount, _new_timer));
+	Timer::TimerMapItem *_new_timer = new Timer::TimerMapItem;
+
+	_new_timer->function_id = function_id;
+	_new_timer->end_time = end_time;
+	_new_timer->params = deq_params;
+	_new_timer->repeat = repeat;
+	_new_timer->start_time = chrono::steady_clock::now();
+
+	_timer_map.insert(pair<int, Timer::TimerMapItem>(TimersCount, *_new_timer));
 	return TimersCount;
 }
 
 void Timer::DeleteTimer(const int id)
 {
 	Timer::TimerMap::iterator iter = _timer_map.find(id);
-
 	if (iter != _timer_map.end()) {
 		iter->second.isdestroyed = true;
 		return;
@@ -71,6 +80,13 @@ void Timer::DeleteTimer(const int id)
 void Timer::DeleteAllTimers()
 {
 	_timer_map.clear();
+}
+
+bool Timer::IsValidTimer(const int id)
+{
+	Timer::TimerMap::const_iterator iter = _timer_map.find(id);
+	if (iter != _timer_map.end()) return true;
+	return false;
 }
 
 bool Timer::ProcessTimer(AMX *amx)

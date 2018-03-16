@@ -97,6 +97,7 @@ bool Timer::ProcessTimer(AMX *amx)
 			else
 				_timer_map.erase(iter++);
 		}
+		iter++;
 	}
 	return true;
 }

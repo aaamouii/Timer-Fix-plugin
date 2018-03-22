@@ -28,13 +28,9 @@ logprintf_t logprintf;
 
 extern void *pAMXFunctions;
 
-AMX *gAMX;
-
 PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
-	if (!Timer::ProcessTimer(gAMX)) {
-		logprintf("[Timer Fix] Timer executing failed");
-	}
+	Timer::Process();
 }
 
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
@@ -45,8 +41,8 @@ PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
 PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 {
 	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
-	logprintf = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
-	logprintf("  Timer Fix plugin v0.7 by KashCherry loaded");
+	logprintf = reinterpret_cast<logprintf_t>(ppData[PLUGIN_DATA_LOGPRINTF]);
+	logprintf("  Timer Fix plugin v0.8 by KashCherry loaded");
 	return true;
 }
 
@@ -57,10 +53,5 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 
 PLUGIN_EXPORT void PLUGIN_CALL AmxLoad(AMX *amx)
 {
-	amx_Redirect(amx, "SetTimer", reinterpret_cast<ucell>(Natives::SetTimer), NULL);
-	amx_Redirect(amx, "SetTimerEx", reinterpret_cast<ucell>(Natives::SetTimerEx), NULL);
-	amx_Redirect(amx, "KillTimer", reinterpret_cast<ucell>(Natives::KillTimer), NULL);
-
-	gAMX = amx;
-	Natives::RegisterNatives(amx);
+	Timer::Init(amx);
 }

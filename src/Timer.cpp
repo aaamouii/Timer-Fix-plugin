@@ -130,10 +130,10 @@ bool Timer::IsValidTimer(AMX *amx, int timerid)
 void Timer::Process()
 {
 	for (auto &amx_iter : amx_list) {
-		for (auto iter = amx_iter.timer_map.begin(); iter != amx_iter.timer_map.end(); iter++) {
+		for (auto iter = amx_iter.timer_map.begin(); iter != amx_iter.timer_map.end();) {
 			if (iter->second.isdestroyed) {
 				try {
-					amx_iter.timer_map.erase(iter);
+					amx_iter.timer_map.erase(iter++);
 				} catch (exception &e) {
 					logprintf("[Timer Fix] %s [EL: 1]", e.what());
 				}
@@ -148,12 +148,14 @@ void Timer::Process()
 					iter->second.start_time = chrono::steady_clock::now();
 				} else {
 					try {
-						amx_iter.timer_map.erase(iter);
+						amx_iter.timer_map.erase(iter++);
+						continue;
 					} catch (exception &e) {
 						logprintf("[Timer Fix] %s [EL: 1]", e.what());
 					}
 				}
 			}
+			iter++;
 		}
 	}
 }

@@ -21,16 +21,13 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#include "main.hpp"
-
-typedef void(*logprintf_t)(char* format, ...);
-logprintf_t logprintf;
+#include "Timer.hpp"
 
 extern void *pAMXFunctions;
 
 PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
-	Timer::Process();
+	Timer::Manager::Timer::Process();
 }
 
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
@@ -42,16 +39,21 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 {
 	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
 	logprintf = reinterpret_cast<logprintf_t>(ppData[PLUGIN_DATA_LOGPRINTF]);
-	logprintf("  Timer Fix plugin v0.8 by KashCherry loaded");
+	Timer::Utility::SetFilePath("timerfix_log.txt");
+	Timer::Utility::Printf("by KashCherry loaded. Version: 1.0");
 	return true;
 }
 
 PLUGIN_EXPORT void PLUGIN_CALL Unload()
 {
-	logprintf("  Timer Fix plugin by KashCherry unloaded");
+	Timer::Utility::Printf("Unloaded.");
 }
 
 PLUGIN_EXPORT void PLUGIN_CALL AmxLoad(AMX *amx)
 {
-	Timer::Init(amx);
+	amx_Redirect(amx, "SetTimer", reinterpret_cast<ucell>(Timer::Natives::n_SetTimer), NULL);
+	amx_Redirect(amx, "SetTimerEx", reinterpret_cast<ucell>(Timer::Natives::n_SetTimerEx), NULL);
+	amx_Redirect(amx, "KillTimer", reinterpret_cast<ucell>(Timer::Natives::n_KillTimer), NULL);
+	Timer::Manager::Callback::Initialize(amx);
+	Timer::Natives::Register(amx);
 }

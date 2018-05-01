@@ -177,54 +177,44 @@ namespace Timer
 			using TimerMap = unordered_map<int, TimerMapItem>;
 
 			static int New(AMX *amx, const char *callback, int interval, bool repeat)
-			{		
-				if(Callback::Find(amx, callback)) {
-					gTimerID++;
-					_timer_map.insert(pair<int,TimerMapItem>(gTimerID, TimerMapItem{ callback, interval, chrono::steady_clock::now(), repeat, false }));
-					return gTimerID;
-				}
-				Utility::Printf("SetTimer: Cannot find callback \"%s\"", callback);
-				Utility::Log("SetTimer: Cannot find callback \"%s\"", callback);
-				return -1;
+			{
+				gTimerID++;
+
+				_timer_map.insert(pair<int,TimerMapItem>(gTimerID, TimerMapItem{ callback, interval, chrono::steady_clock::now(), repeat, false }));
+				return gTimerID;
 			}
 
 			static int NewEx(AMX *amx, const char *callback, int interval, bool repeat, cell *params, const char *format, int offset)
 			{
-				if(Callback::Find(amx, callback))
-				{
-					gTimerID++;
+				gTimerID++;
 
-					deque<cell> _timer_params;
-					for (int i = strlen(format); --i != -1;) {
-						switch (format[i]) {
-						case 'i':
-						case 'I':
-						case 'd':
-						case 'D':
-						case 'c':
-						case 'C':
-						case 'b':
-						case 'B':
-						case 'f':
-						case 'F':
-							_timer_params.push_back(*GetAddr(amx, params[offset + i]));
-							break;
-						case 's':
-						case 'S':
-							_timer_params.push_back(params[offset + i]);
-							break;
-						default:
-							Utility::Printf("SetTimerEx: Unknown format specifer '%c'", format[i]);
-							Utility::Log("SetTimerEx: Unknown format specifer '%c'", format[i]);
-						}
+				deque<cell> _timer_params;
+				for (int i = strlen(format); --i != -1;) {
+					switch (format[i]) {
+					case 'i':
+					case 'I':
+					case 'd':
+					case 'D':
+					case 'c':
+					case 'C':
+					case 'b':
+					case 'B':
+					case 'f':
+					case 'F':
+						_timer_params.push_back(*GetAddr(amx, params[offset + i]));
+						break;
+					case 's':
+					case 'S':
+						_timer_params.push_back(params[offset + i]);
+						break;
+					default:
+						Utility::Printf("SetTimerEx: Unknown format specifer '%c'", format[i]);
+						Utility::Log("SetTimerEx: Unknown format specifer '%c'", format[i]);
 					}
-
-					_timer_map.insert(pair<int, TimerMapItem>(gTimerID, TimerMapItem{ callback, interval, chrono::steady_clock::now(), repeat, false, _timer_params }));
-					return gTimerID;
 				}
-				Utility::Printf("SetTimerEx: Cannot find callback \"%s\"", callback);
-				Utility::Log("SetTimerEx: Cannot find callback \"%s\"", callback);
-				return -1;
+				
+				_timer_map.insert(pair<int, TimerMapItem>(gTimerID, TimerMapItem{ callback, interval, chrono::steady_clock::now(), repeat, false, _timer_params }));
+				return gTimerID;
 			}
 
 			static void Kill(int timerid)
@@ -289,6 +279,7 @@ namespace Timer
 							continue;
 						}
 					}
+					iter++;
 				}
 			}
 			

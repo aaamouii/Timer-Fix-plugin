@@ -221,7 +221,7 @@ namespace Timer
 			{
 				auto iter = _timer_map.find(timerid);
 				if (iter != _timer_map.end()) {
-					_timer_map.erase(timerid);
+					iter->second.isdestroyed = true;
 				} else {
 					Utility::Printf("KillTimer: Cannot find timer with id %d", timerid);
 					Utility::Log("KillTimer: Cannot find timer with id %d", timerid);

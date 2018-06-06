@@ -1,7 +1,7 @@
 /*
 	MIT License
 
-	Copyright (c) 2018 Kash Cherry
+	Copyright (c) 2018 Takagi with love <3
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,15 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#include "Timer.hpp"
-
+#include "main.h"
+logprintf_t logprintf;
 extern void *pAMXFunctions;
+
+CCore *m_pCore;
 
 PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
-	Timer::Manager::Timer::Process();
+	m_pCore->getTimer()->Process();
 }
 
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
@@ -39,21 +41,33 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 {
 	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
 	logprintf = reinterpret_cast<logprintf_t>(ppData[PLUGIN_DATA_LOGPRINTF]);
-	Timer::Utility::SetFilePath("timerfix_log.txt");
-	Timer::Utility::Printf("by KashCherry loaded. Version: 1.0");
+	m_pCore = new CCore();
+	logprintf("[Timer Fix plugin] by KashCherry loaded. Version: 1.1");
 	return true;
 }
 
 PLUGIN_EXPORT void PLUGIN_CALL Unload()
 {
-	Timer::Utility::Printf("Unloaded.");
+	DELETE_SAFE(m_pCore);
+	logprintf("[Timer Fix plugin] unloaded.");
 }
 
 PLUGIN_EXPORT void PLUGIN_CALL AmxLoad(AMX *amx)
 {
-	amx_Redirect(amx, "SetTimer", reinterpret_cast<ucell>(Timer::Natives::n_SetTimer), NULL);
-	amx_Redirect(amx, "SetTimerEx", reinterpret_cast<ucell>(Timer::Natives::n_SetTimerEx), NULL);
-	amx_Redirect(amx, "KillTimer", reinterpret_cast<ucell>(Timer::Natives::n_KillTimer), NULL);
-	Timer::Manager::Callback::Initialize(amx);
-	Timer::Natives::Register(amx);
+	if (coolamx::init(amx) == COOL_AMX_ERROR_OK)
+	{
+		coolamx::hook_native(amx, "SetTimer", reinterpret_cast<void*>(m_pCore->getNatives()->n_SetTimer));
+		coolamx::hook_native(amx, "SetTimerEx", reinterpret_cast<void*>(m_pCore->getNatives()->n_SetTimerEx));
+		coolamx::hook_native(amx, "KillTimer", reinterpret_cast<void*>(m_pCore->getNatives()->n_KillTimer));
+	}
+	m_pCore->getNatives()->Register(amx);
+	m_pCore->getTimer()->Init(amx);
+	m_pCore->getCallback()->Init(amx);
+}
+
+PLUGIN_EXPORT void PLUGIN_CALL AmxUnload(AMX *amx)
+{
+	coolamx::uninit(amx);
+	m_pCore->getCallback()->UnInit(amx);
+	m_pCore->getTimer()->UnInit(amx);
 }

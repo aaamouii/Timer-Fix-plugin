@@ -95,6 +95,6 @@ public:
 	//	cool-amx initializating
 	*/
 	static COOL_AMX_ERRORS init(AMX *amx);
-	static void uninit(AMX *amx);
+	static bool uninit(AMX *amx);
 	static bool store_amx(AMX *amx);
 };

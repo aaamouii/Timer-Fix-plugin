@@ -252,8 +252,14 @@ COOL_AMX_ERRORS coolamx::init(AMX *amx)
 
 	return COOL_AMX_ERROR_OK;
 }
-void coolamx::uninit(AMX *amx)
+bool coolamx::uninit(AMX *amx)
 {
-	cool_amx.clear();
+	coolamx_t::iterator iter = cool_amx.find(amx);
+	if(iter != cool_amx.end())
+	{
+		cool_amx.erase(amx);
+		return true;
+	}
+	return false;
 }
 // ----------------------------------

@@ -91,7 +91,7 @@ TIMERID CTimer::NewEx(AMX *amx, const char *callback, int interval, bool repeat,
 			case 'I':
 			case 'b':
 			case 'B':
-				cell *amx_integer; // not only integer, but... :/
+				cell *amx_integer; // not only integer, but... :\
 				amx_GetAddr(amx, params[j + offset], &amx_integer);
 				timer->parameters.integers.push_back(*amx_integer);
 				break;

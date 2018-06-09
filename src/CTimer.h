@@ -27,7 +27,7 @@ public:
 	bool UnInit(AMX *amx);
 	TIMERID New(AMX *amx, const char *callback, int interval, bool repeat);
 	TIMERID NewEx(AMX *amx, const char *callback, int interval, bool repeat, cell *params, const char *format, int offset);
-	bool Kill(AMX *amx, int timerid, bool real_kill = false);
+	bool Kill(AMX *amx, int timerid);
 	void KillAllTimers();
 	bool SetInterval(AMX *amx, int timerid, int interval);
 	int GetInterval(AMX *amx, int timerid);

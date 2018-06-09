@@ -123,7 +123,7 @@ void CTimer::KillAllTimers()
 	}
 }
 
-bool CTimer::Kill(AMX *amx, int timerid, bool real_kill)
+bool CTimer::Kill(AMX *amx, int timerid)
 {
 	amx_t::iterator iter = timer_list.find(amx);
 	if (iter != timer_list.end())
@@ -131,20 +131,7 @@ bool CTimer::Kill(AMX *amx, int timerid, bool real_kill)
 		timers_t::iterator timer_iter = iter->second.find(timerid);
 		if (timer_iter != iter->second.end())
 		{
-			if (real_kill)
-			{
-				for (auto arrays : timer_iter->second->parameters.arrays)
-				{
-					free(arrays.first);
-				}
-				DELETE_SAFE(timer_iter->second);
-				iter->second.erase(timer_iter);
-				return true;
-			}
-			else
-			{
-				timer_iter->second->is_destroyed = true;
-			}
+			timer_iter->second->is_destroyed = true;
 			return true;
 		}
 	}
@@ -204,14 +191,17 @@ void CTimer::Process()
 
 	for (amx_t::iterator iter = timer_list.begin(); iter != timer_list.end(); iter++)
 	{
-		for (timers_t::iterator timer_iter = iter->second.begin(); timer_iter != iter->second.end(); timer_iter++)
+		for (timers_t::iterator timer_iter = iter->second.begin(); timer_iter != iter->second.end();)
 		{
 			if (timer_iter->second->is_destroyed)
 			{
-				if (!Kill(iter->first, timer_iter->first, true))
+				for (auto arrays : timer_iter->second->parameters.arrays)
 				{
-					logprintf("[Timer Fix plugin] cannot kill timer with id %d", timer_iter->first);
+					free(arrays.first);
 				}
+				DELETE_SAFE(timer_iter->second);
+				iter->second.erase(timer_iter++);
+				continue;
 			}
 			if (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - timer_iter->second->start_time_point).count() >= timer_iter->second->interval)
 			{
@@ -265,12 +255,16 @@ void CTimer::Process()
 				}
 				else
 				{
-					if (!Kill(iter->first, timer_iter->first, true))
+					for (auto arrays : timer_iter->second->parameters.arrays)
 					{
-						logprintf("[Timer Fix plugin] cannot kill timer with id %d", timer_iter->first);
+						free(arrays.first);
 					}
+					DELETE_SAFE(timer_iter->second);
+					iter->second.erase(timer_iter++);
+					continue;
 				}
 			}
+			timer_iter++;
 		}
 	}
 }

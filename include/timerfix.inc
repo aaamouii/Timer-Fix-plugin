@@ -7,3 +7,4 @@ native KillAllTimers();
 native IsValidTimer(timerid);
 native GetTimerInterval(timerid);
 native SetTimerInterval(timerid, interval);
+native GetIdLastTimer();

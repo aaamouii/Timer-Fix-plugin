@@ -45,11 +45,17 @@ cell AMX_NATIVE_CALL CNatives::n_IsValidTimer(AMX *amx, cell *params)
 	return m_pCore->getTimer()->IsValid(amx, params[1]);
 }
 
+cell AMX_NATIVE_CALL CNatives::n_GetIdLastTimer(AMX *amx, cell *params)
+{
+	return m_pCore->getTimer()->GetIdLastTimer();
+}
+
 const AMX_NATIVE_INFO PluginNatives[] = {
 	{"KillAllTimers", CNatives::n_KillAllTimers},
 	{"SetTimerInterval", CNatives::n_SetTimerInterval},
 	{"GetTimerInterval", CNatives::n_GetTimerInterval},
 	{"IsValidTimer", CNatives::n_IsValidTimer},
+	{"GetIdLastTimer", CNatives::n_GetIdLastTimer},
 	{0,0}
 };
 

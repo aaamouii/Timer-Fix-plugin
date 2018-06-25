@@ -32,6 +32,7 @@ public:
 	bool SetInterval(AMX *amx, int timerid, int interval);
 	int GetInterval(AMX *amx, int timerid);
 	bool IsValid(AMX *amx, int timerid);
+	TIMERID GetIdLastTimer();
 
 	void Process();
 };

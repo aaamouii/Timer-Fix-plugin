@@ -10,6 +10,7 @@ public:
 	static cell AMX_NATIVE_CALL n_SetTimerInterval(AMX *amx, cell *params);
 	static cell AMX_NATIVE_CALL n_GetTimerInterval(AMX *amx, cell *params);
 	static cell AMX_NATIVE_CALL n_IsValidTimer(AMX *amx, cell *params);
+	static cell AMX_NATIVE_CALL n_GetIdLastTimer(AMX * amx, cell * params);
 
 	void Register(AMX *amx);
 };

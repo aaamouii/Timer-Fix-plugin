@@ -181,6 +181,11 @@ bool CTimer::IsValid(AMX *amx, int timerid)
 	return false;
 }
 
+TIMERID CTimer::GetIdLastTimer()
+{
+	return gTimerID;
+}
+
 void CTimer::Process()
 {
 	/*

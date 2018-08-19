@@ -28,9 +28,11 @@
   #include "sclinux.h"
 #endif
 
+#include <string.h>
+
 #ifndef AMX_H_INCLUDED
 #define AMX_H_INCLUDED
-
+#define HAVE_STDINT_H
 #if defined HAVE_STDINT_H
   #include <stdint.h>
 #else

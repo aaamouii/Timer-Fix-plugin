@@ -1,0 +1,22 @@
+{
+    "user": "KashCherry",
+    "repo": "Timer-Fix-plugin",
+    "include_path": "include",
+    "resources": [
+        {
+            "name": "^timerfix-(.+)-linux.tar.gz$",
+            "platform": "linux",
+            "archive": true,
+            "plugins": ["plugins/timerfix.so"]
+        },
+        {
+            "name": "^timerfix-(.+)-windows.zip$",
+            "platform": "windows",
+            "archive": true,
+            "plugins": ["plugins/timerfix.dll"]
+        }
+    ],
+    "runtime": {
+        "plugins": ["KashCherry/Timer-Fix-plugin"]
+    }
+}

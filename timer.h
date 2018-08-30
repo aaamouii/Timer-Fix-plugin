@@ -9,10 +9,10 @@ public:
 	std::set<AMX *> interfaces;
 	unsigned short gTimerID = 0;
 
-	unsigned short Add(const char *callback, int interval, bool repeat);
+	unsigned short Add(AMX *amx, const char *callback, int interval, bool repeat);
 	unsigned short AddEx(AMX *amx, const char *callback, int interval, bool repeat, cell *params, const char *format, int offset);
 	int Remove(int timerid);
-	void RemoveAll();
+	void RemoveAll(AMX *amx);
 	int IsValid(int timerid);
 	int SetInterval(int timerid, int interval);
 	int GetInterval(int timerid);
@@ -27,6 +27,7 @@ private:
 	} params_type;
 	typedef struct
 	{
+		AMX *amx;
 		std::string callback_name;
 		int interval;
 		bool repeat;

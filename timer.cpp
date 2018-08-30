@@ -3,7 +3,7 @@
 
 extern boost::scoped_ptr<Core> core;
 
-unsigned short Timer::Add(const char *callback, int interval, bool repeat)
+unsigned short Timer::Add(AMX *amx, const char *callback, int interval, bool repeat)
 {
 	timer_type *t = new timer_type;
 	if (t == NULL)
@@ -12,6 +12,7 @@ unsigned short Timer::Add(const char *callback, int interval, bool repeat)
 		return 0;
 	}
 	gTimerID++;
+	t->amx = amx;
 	t->callback_name = callback;
 	t->interval = interval;
 	t->repeat = repeat;
@@ -30,6 +31,7 @@ unsigned short Timer::AddEx(AMX *amx, const char *callback, int interval, bool r
 		return 0;
 	}
 	gTimerID++;
+	t->amx = amx;
 	t->callback_name = callback;
 	t->interval = interval;
 	t->repeat = repeat;
@@ -75,6 +77,7 @@ unsigned short Timer::AddEx(AMX *amx, const char *callback, int interval, bool r
 			break;
 		default:
 			core->getPlugin()->Printf("SetTimerEx: unknown format specifer");
+			break;
 		}
 	}
 	t->entry_point = boost::chrono::steady_clock::now();
@@ -93,16 +96,20 @@ int Timer::Remove(int timerid)
 	return 0;
 }
 
-void Timer::RemoveAll()
+void Timer::RemoveAll(AMX *amx)
 {
 	for (auto t = timer_list.begin(); t != timer_list.end();)
 	{
-		for (auto arrays : t->second->params.arrays) free(arrays.first);
-		t->second->params.arrays.clear();
-		t->second->params.strings.clear();
-		t->second->params.integers.clear();
-		delete t->second;
-		timer_list.erase(t);
+		if (t->second->amx == amx)
+		{
+			for (auto arrays : t->second->params.arrays) free(arrays.first);
+			t->second->params.arrays.clear();
+			t->second->params.strings.clear();
+			t->second->params.integers.clear();
+			delete t->second;
+			timer_list.erase(t++);
+			continue;
+		}
 		t++;
 	}
 }
@@ -151,17 +158,14 @@ void Timer::Update()
 		{
 			cell tmp, retval;
 			int idx;
-			for (auto m = interfaces.begin(); m != interfaces.end(); m++)
+			if (amx_FindPublic(t->second->amx, t->second->callback_name.c_str(), &idx) == AMX_ERR_NONE)
 			{
-				if (amx_FindPublic(*m, t->second->callback_name.c_str(), &idx) == AMX_ERR_NONE)
+				for (auto arrays : t->second->params.arrays) amx_PushArray(t->second->amx, &tmp, NULL, arrays.first, arrays.second);
+				for (auto strings : t->second->params.strings) amx_PushString(t->second->amx, &tmp, NULL, strings.c_str(), NULL, NULL);
+				for (auto integers : t->second->params.integers) amx_Push(t->second->amx, integers);
+				if (amx_Exec(t->second->amx, &retval, idx) != AMX_ERR_NONE)
 				{
-					for (auto arrays : t->second->params.arrays) amx_PushArray(*m, &tmp, NULL, arrays.first, arrays.second);
-					for (auto strings : t->second->params.strings) amx_PushString(*m, &tmp, NULL, strings.c_str(), NULL, NULL);
-					for (auto integers : t->second->params.integers) amx_Push(*m, integers);
-					if (amx_Exec(*m, &retval, idx) != AMX_ERR_NONE)
-					{
-						core->getPlugin()->Printf("error: cannot execute callback with name \"%s\"", t->second->callback_name.c_str());
-					}
+					core->getPlugin()->Printf("error: cannot execute callback with name \"%s\"", t->second->callback_name.c_str());
 				}
 			}
 			if (t->second->repeat)

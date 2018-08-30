@@ -7,7 +7,7 @@ cell AMX_NATIVE_CALL Natives::n_SetTimer(AMX *amx, cell *params)
 {
 	char *callback;
 	amx_StrParam(amx, params[1], callback);
-	return core->getTimer()->Add(callback, params[2], !!params[3]);
+	return core->getTimer()->Add(amx, callback, params[2], !!params[3]);
 }
 
 cell AMX_NATIVE_CALL Natives::n_SetTimerEx(AMX *amx, cell *params)
@@ -30,7 +30,7 @@ cell AMX_NATIVE_CALL Natives::n_IsValid(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL Natives::n_KillAllTimers(AMX *amx, cell *params)
 {
-	core->getTimer()->RemoveAll();
+	core->getTimer()->RemoveAll(amx);
 	return 1;
 }
 
@@ -47,6 +47,10 @@ cell AMX_NATIVE_CALL Natives::n_GetTimerInterval(AMX *amx, cell *params)
 void AMXAPI amxred(AMX *amx, const char *from, ucell to, AMX_NATIVE *store) {
 	AMX_HEADER *hdr = (AMX_HEADER*)amx->base;
 	AMX_FUNCSTUB *func;
+
+	assert(hdr != NULL);
+	assert(hdr->magic == AMX_MAGIC);
+
 	for (int idx = 0, num = NUMENTRIES(hdr, natives, libraries); idx != num; ++idx) {
 		func = GETENTRY(hdr, natives, idx);
 		if (!strcmp(from, GETENTRYNAME(hdr, func))) {

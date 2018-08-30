@@ -39,6 +39,6 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx)
 PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx)
 {
 	core->getTimer()->interfaces.erase(amx);
-	core->getTimer()->RemoveAll();
+	core->getTimer()->RemoveAll(amx);
 	return AMX_ERR_NONE;
 }

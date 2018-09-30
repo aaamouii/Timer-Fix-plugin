@@ -1,14 +1,19 @@
 #include "timer.h"
-#include "core.h"
+#include "kernel.h"
 
-extern boost::scoped_ptr<Core> core;
+using namespace tf;
 
-unsigned short Timer::Add(AMX *amx, const char *callback, int interval, bool repeat)
+extern Kernel *kernel;
+
+std::unordered_map<unsigned short, timer_type *> timer_list;
+unsigned short gTimerID = 0;
+
+unsigned short Timer::New(AMX *amx, const char *callback, CORETYPE interval, bool repeat)
 {
 	timer_type *t = new timer_type;
 	if (t == NULL)
 	{
-		core->getPlugin()->Printf("SetTimer: cannot allocate memory.");
+		kernel->send("SetTimer: cannot allocate memory.");
 		return 0;
 	}
 	gTimerID++;
@@ -17,17 +22,17 @@ unsigned short Timer::Add(AMX *amx, const char *callback, int interval, bool rep
 	t->interval = interval;
 	t->repeat = repeat;
 	t->is_destroyed = false;
-	t->entry_point = boost::chrono::steady_clock::now();
+	t->entry_point = time::milliseconds::get();
 	timer_list.insert(std::pair<int, timer_type *>(gTimerID, t));
 	return gTimerID;
 }
 
-unsigned short Timer::AddEx(AMX *amx, const char *callback, int interval, bool repeat, cell *params, const char *format, int offset)
+unsigned short Timer::NewEx(AMX *amx, const char *callback, CORETYPE interval, bool repeat, cell *params, const char *format, int offset)
 {
 	timer_type *t = new timer_type;
 	if (t == NULL)
 	{
-		core->getPlugin()->Printf("SetTimerEx: cannot allocate memory.");
+		kernel->send("SetTimerEx: cannot allocate memory.");
 		return 0;
 	}
 	gTimerID++;
@@ -76,18 +81,18 @@ unsigned short Timer::AddEx(AMX *amx, const char *callback, int interval, bool r
 			t->params.integers.push_back(*amx_integer);
 			break;
 		default:
-			core->getPlugin()->Printf("SetTimerEx: unknown format specifer");
+			kernel->send("SetTimerEx: unknown format specifer");
 			break;
 		}
 	}
-	t->entry_point = boost::chrono::steady_clock::now();
+	t->entry_point = time::milliseconds::get();
 	timer_list.insert(std::pair<int, timer_type *>(gTimerID, t));
 	return gTimerID;
 }
 
-int Timer::Remove(int timerid)
+int Timer::Kill(unsigned short timerid)
 {
-	auto t = timer_list.find(timerid);
+	std::unordered_map<unsigned short, timer_type *>::iterator t = timer_list.find(timerid);
 	if (t != timer_list.end())
 	{
 		t->second->is_destroyed = true;
@@ -96,9 +101,35 @@ int Timer::Remove(int timerid)
 	return 0;
 }
 
-void Timer::RemoveAll(AMX *amx)
+int Timer::IsValid(unsigned short timerid)
 {
-	for (auto t = timer_list.begin(); t != timer_list.end();)
+	return (timer_list.find(timerid) != timer_list.end());
+}
+
+int Timer::SetInterval(unsigned short timerid, CORETYPE interval)
+{
+	auto t = timer_list.find(timerid);
+	if (t != timer_list.end())
+	{
+		t->second->interval = interval;
+		return 1;
+	}
+	return 0;
+}
+
+CORETYPE Timer::GetInterval(unsigned short timerid)
+{
+	auto t = timer_list.find(timerid);
+	if (t != timer_list.end())
+	{
+		return t->second->interval;
+	}
+	return 0;
+}
+
+void Timer::KillAll(AMX *amx)
+{
+	for (std::unordered_map<unsigned short, timer_type *>::iterator t = timer_list.begin(); t != timer_list.end();)
 	{
 		if (t->second->amx == amx)
 		{
@@ -114,35 +145,19 @@ void Timer::RemoveAll(AMX *amx)
 	}
 }
 
-int Timer::IsValid(int timerid)
+CORETYPE Timer::GetRemaining(unsigned short timerid)
 {
-	return (timer_list.find(timerid) != timer_list.end());
-}
-
-int Timer::SetInterval(int timerid, int interval)
-{
-	auto t = timer_list.find(timerid);
+	std::unordered_map<unsigned short, timer_type *>::iterator t = timer_list.find(timerid);
 	if (t != timer_list.end())
 	{
-		t->second->interval = interval;
-		return 1;
-	}
-	return 0;
-}
-
-int Timer::GetInterval(int timerid)
-{
-	auto t = timer_list.find(timerid);
-	if (t != timer_list.end())
-	{
-		return t->second->interval;
+		return t->second->interval - (time::milliseconds::get() - t->second->entry_point);
 	}
 	return 0;
 }
 
 void Timer::Update()
 {
-	for (auto t = timer_list.begin(); t != timer_list.end();)
+	for (std::unordered_map<unsigned short, timer_type *>::iterator t = timer_list.begin(); t != timer_list.end();)
 	{
 		if (t->second->is_destroyed)
 		{
@@ -154,7 +169,7 @@ void Timer::Update()
 			timer_list.erase(t++);
 			continue;
 		}
-		if (boost::chrono::duration_cast<boost::chrono::milliseconds>(boost::chrono::steady_clock::now() - t->second->entry_point).count() >= t->second->interval)
+		if ((time::milliseconds::get() - t->second->entry_point) >= t->second->interval)
 		{
 			cell tmp, retval;
 			int idx;
@@ -165,12 +180,14 @@ void Timer::Update()
 				for (auto integers : t->second->params.integers) amx_Push(t->second->amx, integers);
 				if (amx_Exec(t->second->amx, &retval, idx) != AMX_ERR_NONE)
 				{
-					core->getPlugin()->Printf("error: cannot execute callback with name \"%s\"", t->second->callback_name.c_str());
+					kernel->send("error: cannot execute callback with name \"%s\"", t->second->callback_name.c_str());
 				}
 			}
 			if (t->second->repeat)
 			{
-				t->second->entry_point = boost::chrono::steady_clock::now();
+				t->second->entry_point = time::milliseconds::get();
+				t++;
+				continue;
 			}
 			else
 			{

@@ -1,7 +1,7 @@
 EXPORTS
 	Load
 	Unload
-	AmxLoad
-	AmxUnload
 	Supports
 	ProcessTick
+	AmxLoad
+	AmxUnload

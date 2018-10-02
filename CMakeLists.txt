@@ -1,10 +1,6 @@
 project(timerfix)
 cmake_minimum_required (VERSION 2.8.4)
 
-set(CMAKE_CXX_COMPILER "/usr/bin/g++")
-set(CMAKE_C_COMPILER "/usr/bin/gcc")
-set(CMAKE_STATIC_LIBRARY_PREFIX "")
-
 set(LIBRARY_GROUP "lib\\")
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -27,6 +23,10 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_C_FLAGS "-m32 -O3 -w -Ilib")
 	set(CMAKE_CXX_FLAGS "-m32 -O3 -w -Ilib -std=c++11")
 	set(CMAKE_SHARED_LINKER_FLAGS ${LINKER_FLAGS})	
+
+	set(CMAKE_CXX_COMPILER "/usr/bin/g++")
+	set(CMAKE_C_COMPILER "/usr/bin/gcc")
+	set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
 endif ()
 

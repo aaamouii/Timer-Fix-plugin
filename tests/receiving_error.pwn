@@ -11,7 +11,7 @@
 #include <a_samp>
 //	Not necessary. Plugin hooks default natives.
 #include <timerfix>
-//	Note: To switch between default timers and timerfix, you must disable(or enable) timerfix.
+//	Note: To switch between default timers and timerfix, you must disable(or enable) timerfix plugin.
 
 new _gTimerTickCount;
 

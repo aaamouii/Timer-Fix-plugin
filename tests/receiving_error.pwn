@@ -1,6 +1,6 @@
 //	KashCherry (c) 2018
 //	A test that shows what the timer delay is before it calls the callback.
-//	I can't say that it is 100% accurate, but the bug delays are obvious.
+//	I can't say that it is 100% accurate, but the big delays are obvious.
 //
 //	So here you can see the default timers VS timerfix.
 //	repo: https://github.com/KashCherry/Timer-Fix-plugin

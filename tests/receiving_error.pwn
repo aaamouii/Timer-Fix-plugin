@@ -25,7 +25,7 @@ public TimerCallback()
 
 main()
 {
-	#ifdef TEST_WITH_REPEAT
+	#if defined TEST_WITH_REPEAT
 	  SetTimer("TimerCallback", 1000, true);
 	#else
 	  SetTimer("TimerCallback", 1000, false);

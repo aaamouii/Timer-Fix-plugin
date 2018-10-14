@@ -1,7 +1,9 @@
 project(timerfix)
 cmake_minimum_required (VERSION 2.8.4)
 
-set(LIBRARY_GROUP "lib\\")
+if (CMAKE_VERSION VERSION_GREATER 3.1.3)
+	cmake_policy(SET CMP0054 NEW)
+endif ()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 

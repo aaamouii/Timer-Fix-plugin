@@ -1,42 +1,50 @@
-#pragma once
+#ifndef TIMER_H_
+#define TIMER_H_
 
+/// Internal includes
+/// ----------------------------
 #include "main.h"
-#include "ftime.h"
+/// ----------------------------
 
-#include <iostream>
-#include <unordered_map>
+/// External includes
+/// ----------------------------
 #include <deque>
+#include <chrono>
+/// ----------------------------
 
-namespace tf {
+typedef struct
+{
+	std::deque<std::pair<cell *, cell>> arrays;
+	std::deque<std::string> strings;
+	std::deque<int> integers;
+} params_type;
+typedef struct
+{
+	std::string callback_name;
+	int interval;
+	bool repeat;
+	bool is_destroyed;
+	params_type params;
+	std::chrono::high_resolution_clock::time_point entry_point;
+} timer_type;
 
-	typedef struct
-	{
-		std::deque<std::pair<cell *, cell>> arrays;
-		std::deque<std::string> strings;
-		std::deque<int> integers;
-	} params_type;
-	typedef struct
-	{
-		AMX *amx;
-		std::string callback_name;
-		CORETYPE interval;
-		bool repeat;
-		bool is_destroyed;
-		params_type params;
-		CORETYPE entry_point;
-	} timer_type;
+class Timer
+{
+public:
 
-	class Timer {
-	public:
-		unsigned short New(AMX *amx, const char *callback, CORETYPE interval, bool repeat);
-		unsigned short NewEx(AMX *amx, const char *callback, CORETYPE interval, bool repeat, cell *params, const char *format, int offset);
-		int Kill(unsigned short id);
-		void KillAll(AMX *amx);
-		int IsValid(unsigned short timerid);
-		int SetInterval(unsigned short timerid, CORETYPE interval);
-		CORETYPE GetInterval(unsigned short timerid);
-		CORETYPE GetRemaining(unsigned short timerid);
-		void Update();
-	};
+	Timer();
+	~Timer();
 
-} // namespace tf
+	int New(const char *callback, int interval, bool repeat);
+	int NewEx(AMX *amx, const char *callback, int interval, bool repeat, cell *params, const char *format, int offset);
+	int Kill(int timerid);
+	void KillAll();
+	int IsValid(int timerid);
+	int SetInterval(int timerid, int interval);
+	int GetInterval(int timerid);
+	int GetRemaining(int timerid);
+
+	void Process(AMX *amx);
+};
+
+#endif

@@ -1,8 +1,25 @@
-#pragma once
+#ifndef MAIN_H_
+#define MAIN_H_
 
-#include <amx/amx.h>
-#include <plugincommon.h>
+/// Internal includes
+/// ----------------------------
 
-#define PLUGIN_NAME		"Timer Fix"
-#define PLUGIN_VERSION	"1.04"
-#define PLUGIN_AUTHOR	"KashCherry"
+
+
+/// ----------------------------
+
+/// Internal SDK
+/// ----------------------------
+
+#include "sdk/amx/amx.h"
+#include "sdk/plugincommon.h"
+
+/// ----------------------------
+
+#ifndef SET_BY_COMPILE
+  #define PLUGIN_NAME		"Timer Fix"
+  #define PLUGIN_VERSION	"1.05"
+  #define PLUGIN_AUTHOR		"KashCherry"
+#endif
+
+#endif

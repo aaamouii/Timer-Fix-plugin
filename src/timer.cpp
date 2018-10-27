@@ -117,12 +117,7 @@ int Timer::Kill(int timerid)
 	std::unordered_map<int, timer_type *>::const_iterator t = timer_list.find(timerid);
 	if (t != timer_list.end())
 	{
-		for (auto arrays : t->second->params.arrays) free(arrays.first);
-		t->second->params.arrays.clear();
-		t->second->params.strings.clear();
-		t->second->params.integers.clear();
-		delete t->second;
-		timer_list.erase(t);
+		t->second->is_destroyed = true;
 		return 1;
 	}
 	return 0;

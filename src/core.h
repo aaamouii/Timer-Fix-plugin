@@ -11,7 +11,7 @@
 
 /// External includes
 /// ----------------------------
-#include "lwm/pointer.h"
+#include <lwm/pointer.h>
 /// ----------------------------
 
 using namespace LWM;

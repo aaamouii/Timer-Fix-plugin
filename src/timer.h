@@ -10,6 +10,7 @@
 /// ----------------------------
 #include <deque>
 #include <chrono>
+#include <iostream>
 /// ----------------------------
 
 typedef struct

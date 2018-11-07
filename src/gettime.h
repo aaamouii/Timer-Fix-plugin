@@ -21,28 +21,11 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#ifndef MAIN_H_
-#define MAIN_H_
+#ifndef GETTIME_H_
+#define GETTIME_H_
 
-/// Internal includes
-/// ----------------------------
+#include "types.h"
 
-
-
-/// ----------------------------
-
-/// Internal SDK
-/// ----------------------------
-
-#include <sdk/amx/amx.h>
-#include <sdk/plugincommon.h>
-
-/// ----------------------------
-
-#ifndef SET_BY_COMPILE
-  #define PLUGIN_NAME		"Timer Fix"
-  #define PLUGIN_VERSION	"1.06"
-  #define PLUGIN_AUTHOR		"KashCherry"
-#endif
+Time GetTime();
 
 #endif

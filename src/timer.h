@@ -27,6 +27,7 @@
 /// Internal includes
 /// ----------------------------
 #include "main.h"
+#include "types.h"
 /// ----------------------------
 
 /// External includes
@@ -45,11 +46,11 @@ typedef struct
 typedef struct
 {
 	std::string callback_name;
-	int interval;
-	bool repeat;
-	bool is_destroyed;
+	Time interval;
+	Flag repeat;
+	Flag is_destroyed;
 	params_type params;
-	std::chrono::high_resolution_clock::time_point entry_point;
+	Time entry_point;
 } timer_type;
 
 class Timer

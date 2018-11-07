@@ -21,28 +21,36 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#ifndef MAIN_H_
-#define MAIN_H_
+#include "gettime.h"
 
-/// Internal includes
-/// ----------------------------
-
-
-
-/// ----------------------------
-
-/// Internal SDK
-/// ----------------------------
-
-#include <sdk/amx/amx.h>
-#include <sdk/plugincommon.h>
-
-/// ----------------------------
-
-#ifndef SET_BY_COMPILE
-  #define PLUGIN_NAME		"Timer Fix"
-  #define PLUGIN_VERSION	"1.06"
-  #define PLUGIN_AUTHOR		"KashCherry"
+#ifdef _WIN32
+  #include <windows.h>
+#else
+  #include <sys/time.h>
+  #include <unistd.h>
 #endif
 
+Time GetTime()
+{
+#ifdef _WIN32
+	Time curTime;
+	LARGE_INTEGER PerfVal;
+	LARGE_INTEGER yo1;
+
+	QueryPerformanceFrequency(&yo1);
+	QueryPerformanceCounter(&PerfVal);
+
+	__int64 quotient, remainder;
+	quotient = ((PerfVal.QuadPart) / yo1.QuadPart);
+	remainder = ((PerfVal.QuadPart) % yo1.QuadPart);
+	curTime = (Time) quotient*(Time)1000000 + (remainder*(Time)1000000 / yo1.QuadPart);
+	return (curTime / 1000);
+#else
+	timeval tp;
+	Time curTime;
+	gettimeofday(&tp, 0);
+
+	curTime = (tp.tv_sec) * (Time) 1000000 + (tp.tv_usec);
+	return (curTime / 1000);
 #endif
+}

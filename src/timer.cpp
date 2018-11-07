@@ -25,6 +25,7 @@
 /// ----------------------------
 #include "timer.h"
 #include "core.h"
+#include "gettime.h"
 /// ----------------------------
 
 /// External includes
@@ -56,14 +57,18 @@ int Timer::New(const char *callback, int interval, bool repeat)
 		return 0;
 	}
 
-	if (interval < 1) interval = 1;
+	if (interval < 1)
+		interval = 1;
+
+	if (gTimerID > 0xFFFFFF)
+		core->getInternal()->Log("warning: you created too many timers");
 
 	gTimerID++;
 	t->callback_name = callback;
 	t->interval = interval;
 	t->repeat = repeat;
 	t->is_destroyed = false;
-	t->entry_point = std::chrono::high_resolution_clock::now();
+	t->entry_point = GetTime();
 
 	timer_list.insert(std::pair<int, timer_type *>(gTimerID, t));
 	return gTimerID;
@@ -78,7 +83,11 @@ int Timer::NewEx(AMX *amx, const char *callback, int interval, bool repeat, cell
 		return 0;
 	}
 
-	if (interval < 1) interval = 1;
+	if (interval < 1)
+		interval = 1;
+
+	if(gTimerID > 0xFFFFFF)
+		core->getInternal()->Log("warning: you created too many timers");
 
 	gTimerID++;
 	t->callback_name = callback;
@@ -130,7 +139,7 @@ int Timer::NewEx(AMX *amx, const char *callback, int interval, bool repeat, cell
 		}
 	}
 
-	t->entry_point = std::chrono::high_resolution_clock::now();
+	t->entry_point = GetTime();
 	timer_list.insert(std::pair<int, timer_type *>(gTimerID, t));
 	return gTimerID;
 }
@@ -182,7 +191,7 @@ int Timer::GetInterval(int timerid)
 	std::unordered_map<int, timer_type *>::iterator t = timer_list.find(timerid);
 	if (t != timer_list.end())
 	{
-		return t->second->interval;
+		return (int)t->second->interval;
 	}
 	return -1;
 }
@@ -192,7 +201,7 @@ int Timer::GetRemaining(int timerid)
 	std::unordered_map<int, timer_type *>::iterator t = timer_list.find(timerid);
 	if (t != timer_list.end())
 	{
-		return (t->second->interval - (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t->second->entry_point).count()));
+		return (int)(t->second->interval - (GetTime() - t->second->entry_point));
 	}
 	return -1;
 }
@@ -211,7 +220,7 @@ void Timer::Process(AMX *amx)
 			timer_list.erase(t++);
 			continue;
 		}
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t->second->entry_point).count() >= t->second->interval)
+		if ((GetTime() - t->second->entry_point) >= t->second->interval)
 		{
 			cell tmp, retval;
 			int idx;
@@ -228,7 +237,7 @@ void Timer::Process(AMX *amx)
 
 			if (t->second->repeat)
 			{
-				t->second->entry_point = std::chrono::high_resolution_clock::now();
+				t->second->entry_point = GetTime();
 				t++;
 				continue;
 			}

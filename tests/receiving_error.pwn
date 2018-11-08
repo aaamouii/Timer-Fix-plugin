@@ -1,5 +1,5 @@
 //	A test that shows what the timer delay is before it calls the callback.
-//	I can't say that it is 100% accurate, but the big delays are obvious.
+//	I can't say that it is 100% accurate, but of course it's close to reality.
 //
 //	So here you can see the default timers VS timerfix.
 //	repo: https://github.com/KashCherry/Timer-Fix-plugin

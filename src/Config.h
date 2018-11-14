@@ -21,36 +21,11 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#include "gettime.h"
+#ifndef __CONFIG_H_
+#define __CONFIG_H_
 
-#ifdef _WIN32
-  #include <windows.h>
-#else
-  #include <sys/time.h>
-  #include <unistd.h>
-#endif
+constexpr auto PLUGIN_NAME = "Timer Fix";
+constexpr auto PLUGIN_VERSION = "1.0.7";
+constexpr auto PLUGIN_AUTHOR = "KashCherry";
 
-Time GetTime()
-{
-#ifdef _WIN32
-	Time curTime;
-	LARGE_INTEGER PerfVal;
-	LARGE_INTEGER yo1;
-
-	QueryPerformanceFrequency(&yo1);
-	QueryPerformanceCounter(&PerfVal);
-
-	__int64 quotient, remainder;
-	quotient = ((PerfVal.QuadPart) / yo1.QuadPart);
-	remainder = ((PerfVal.QuadPart) % yo1.QuadPart);
-	curTime = (Time) quotient*(Time)1000000 + (remainder*(Time)1000000 / yo1.QuadPart);
-	return (curTime / 1000);
-#else
-	timeval tp;
-	Time curTime;
-	gettimeofday(&tp, 0);
-
-	curTime = (tp.tv_sec) * (Time) 1000000 + (tp.tv_usec);
-	return (curTime / 1000);
-#endif
-}
+#endif // __CONFIG_H_

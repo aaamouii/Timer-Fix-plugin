@@ -1,5 +1,5 @@
-project(timerfix)
 cmake_minimum_required (VERSION 2.8.4)
+project(timerfix)
 
 if (CMAKE_VERSION VERSION_GREATER 3.1.3)
 	cmake_policy(SET CMP0054 NEW)
@@ -10,7 +10,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	add_definitions (-DWIN32 -D_WIN32 -D__STDC__)
 
 	file(GLOB TIMERFIX_SRC
-		${CMAKE_CURRENT_SOURCE_DIR}/src/supports.def
+		${CMAKE_CURRENT_SOURCE_DIR}/src/exports.def
 	)
 
 	set (CMAKE_C_FLAGS "/Zp1 /W4 /MT")
@@ -45,7 +45,7 @@ file(GLOB TIMERFIX_SRC
 source_group("" FILES ${FCNPC_SRC})
 
 file(GLOB SDK_SRC
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/sdk/*.h
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/sdk/amx/*.h
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/sdk/*.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/sdk/amx/*.h
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/sdk/amx/*.c

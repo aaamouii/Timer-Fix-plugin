@@ -21,76 +21,92 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#include "natives.h"
-#include "core.h"
+#include "Natives.h"
+#include "Console.h"
+#include "Timer.h"
 
-extern local_ptr<Core> core;
+LWM::local_ptr<CNatives> NativesInstance;
 
-#define CHECK_PARAMS(c) if(params[0] != (c * 4)) core->getInternal()->Log("bad parameter count (count is %d, should be %d)", params[0] / 4, c)
+#define CHECK_PARAMS(c) if(params[0] != (c * 4)) CConsole::Get()->Log("bad parameter count (count is %d, should be %d)", params[0] / 4, c)
 
-cell AMX_NATIVE_CALL Natives::n_SetTimer(AMX *amx, cell *params)
+void CNatives::Initialize()
+{
+	NativesInstance.reset(new CNatives);
+}
+
+void CNatives::Destroy()
+{
+	NativesInstance.reset();
+}
+
+LWM::local_ptr<CNatives> CNatives::Get()
+{
+	return NativesInstance;
+}
+
+cell AMX_NATIVE_CALL CNatives::n_SetTimer(AMX *amx, cell *params)
 {
 	CHECK_PARAMS(3);
 	char *callback;
 	amx_StrParam(amx, params[1], callback);
-	return (cell)core->getInterface()->Create(amx, callback, params[2], !!params[3]);
+	return CTimer::Get()->New(amx, callback, params[2], !!params[3]);
 }
 
-cell AMX_NATIVE_CALL Natives::n_SetTimerEx(AMX *amx, cell *params)
+cell AMX_NATIVE_CALL CNatives::n_SetTimerEx(AMX *amx, cell *params)
 {
-	if (params[0] < (5 * 4)) core->getInternal()->Log("bad parameter count (count is %d, should be more %d)", params[0] / 4, 4);
+	if (params[0] < (5 * 4)) CConsole::Get()->Log("bad parameter count (count is %d, should be more %d)", params[0] / 4, 4);
 	char *callback, *format;
 	amx_StrParam(amx, params[1], callback);
 	amx_StrParam(amx, params[4], format);
-	return (cell)core->getInterface()->CreateEx(amx, callback, params[2], !!params[3], params, format, 5);
+	return CTimer::Get()->NewEx(amx, callback, params[2], !!params[3], params, format, 5);
 }
 
-cell AMX_NATIVE_CALL Natives::n_KillTimer(AMX *amx, cell *params)
+cell AMX_NATIVE_CALL CNatives::n_KillTimer(AMX *amx, cell *params)
 {
 	CHECK_PARAMS(1);
-	return core->getInterface()->Kill(amx, params[1]);
+	return CTimer::Get()->Kill(params[1]);
 }
 
-cell AMX_NATIVE_CALL Natives::n_KillAllTimers(AMX *amx, cell *params)
+cell AMX_NATIVE_CALL CNatives::n_KillAllTimers(AMX *amx, cell *params)
 {
-	core->getInterface()->KillAll(amx);
+	CTimer::Get()->KillAll(amx);
 	return 1;
 }
 
-cell AMX_NATIVE_CALL Natives::n_IsValidTimer(AMX *amx, cell *params)
+cell AMX_NATIVE_CALL CNatives::n_IsValidTimer(AMX *amx, cell *params)
 {
 	CHECK_PARAMS(1);
-	return core->getInterface()->IsValid(amx, params[1]);
+	return CTimer::Get()->IsValid(params[1]);
 }
 
-cell AMX_NATIVE_CALL Natives::n_GetTimerInterval(AMX *amx, cell *params)
+cell AMX_NATIVE_CALL CNatives::n_GetTimerInterval(AMX *amx, cell *params)
 {
 	CHECK_PARAMS(1);
-	return core->getInterface()->GetInterval(amx, params[1]);
+	return CTimer::Get()->GetInterval(params[1]);
 }
 
-cell AMX_NATIVE_CALL Natives::n_SetTimerInterval(AMX *amx, cell *params)
+cell AMX_NATIVE_CALL CNatives::n_SetTimerInterval(AMX *amx, cell *params)
 {
 	CHECK_PARAMS(2);
-	return core->getInterface()->SetInterval(amx, params[1], params[2]);
+	return CTimer::Get()->SetInterval(params[1], params[2]);
 }
 
-cell AMX_NATIVE_CALL Natives::n_GetTimerRemainingTime(AMX *amx, cell *params)
+cell AMX_NATIVE_CALL CNatives::n_GetTimerRemainingTime(AMX *amx, cell *params)
 {
 	CHECK_PARAMS(1);
-	return core->getInterface()->GetRemaining(amx, params[1]);
+	return CTimer::Get()->GetRemaining(params[1]);
 }
 
-const AMX_NATIVE_INFO natives[] = {
-	{ "IsValidTimer", Natives::n_IsValidTimer },
-	{ "GetTimerInterval", Natives::n_GetTimerInterval },
-	{ "SetTimerInterval", Natives::n_SetTimerInterval },
-	{ "KillAllTimers", Natives::n_KillAllTimers },
-	{ "GetTimerRemainingTime", Natives::n_GetTimerRemainingTime },
-	{ NULL, NULL }
+constexpr AMX_NATIVE_INFO nativelist[] = {
+	{ "KillAllTimers", CNatives::n_KillAllTimers },
+	{ "IsValidTimer", CNatives::n_IsValidTimer },
+	{ "GetTimerInterval", CNatives::n_GetTimerInterval },
+	{ "SetTimerInterval", CNatives::n_SetTimerInterval },
+	{ "GetTimerRemainingTime", CNatives::n_GetTimerRemainingTime },
+	{NULL,NULL}
 };
 
-void Natives::RegisterNatives(AMX *amx)
+void CNatives::Register(AMX *amx)
 {
-	amx_Register(amx, natives, -1);
+	amx_Register(amx, nativelist, -1);
 }

@@ -21,42 +21,53 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#include "core.h"
+#include "Time.h"
 
-local_ptr<Core> core;
+LWM::local_ptr<CTime> TimeInstance;
 
-Core::Core(void *logprintf)
+#ifdef _WIN32
+  #include <windows.h>
+#else
+  #include <sys/time.h>
+  #include <unistd.h>
+#endif
+
+void CTime::Initialize()
 {
-	p_internal.reset(new Internal(logprintf));
-	p_interface.reset(new Interface);
-	p_natives.reset(new Natives);
-	p_hook.reset(new Hook);
+	TimeInstance.reset(new CTime);
 }
 
-Core::~Core()
+void CTime::Destroy()
 {
-	p_internal.reset();
-	p_interface.reset();
-	p_natives.reset();
-	p_hook.reset();
+	TimeInstance.reset();
 }
 
-local_ptr<Internal> Core::getInternal()
+LWM::local_ptr<CTime> CTime::Get()
 {
-	return p_internal;
+	return TimeInstance;
 }
 
-local_ptr<Interface> Core::getInterface()
+SystemTime CTime::GetTime()
 {
-	return p_interface;
-}
+#ifdef _WIN32
+	SystemTime curTime;
+	LARGE_INTEGER PerfVal;
+	LARGE_INTEGER yo1;
 
-local_ptr<Natives> Core::getNatives()
-{
-	return p_natives;
-}
+	QueryPerformanceFrequency(&yo1);
+	QueryPerformanceCounter(&PerfVal);
 
-local_ptr<Hook> Core::getHook()
-{
-	return p_hook;
+	__int64 quotient, remainder;
+	quotient = ((PerfVal.QuadPart) / yo1.QuadPart);
+	remainder = ((PerfVal.QuadPart) % yo1.QuadPart);
+	curTime = (SystemTime)quotient*(SystemTime)1000000 + (remainder*(SystemTime)1000000 / yo1.QuadPart);
+	return (curTime / 1000);
+#else
+	timeval tp;
+	SystemTime curTime;
+	gettimeofday(&tp, 0);
+
+	curTime = (tp.tv_sec) * (SystemTime)1000000 + (tp.tv_usec);
+	return (curTime / 1000);
+#endif
 }

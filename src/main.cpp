@@ -21,18 +21,61 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-/// Internal includes
-/// ----------------------------
-#include "main.h"
-#include "core.h"
-/// ----------------------------
+#include "common.h"
+#include "Config.h"
+#include "Console.h"
+#include "Types.h"
+#include "Pawn.h"
+#include "Time.h"
+#include "Timer.h"
+#include "Natives.h"
+#include "Hook.h"
 
 extern void *pAMXFunctions;
-extern local_ptr<Core> core;
+logprintf_t logprintf;
 
-PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
+PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 {
-	core->getInterface()->startUpdateForAll();
+	/// Set AMX functions
+	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
+	logprintf = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
+
+	///	Initialize plugin classes
+	CPawn::Initialize();
+	CConsole::Initialize(logprintf);
+	CTimer::Initialize();
+	CTime::Initialize();
+	CNatives::Initialize();
+	CHook::Initialize();
+
+	///	Present
+	CConsole::Get()->Output("  %s plugin v%s by %s loaded.", PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR);
+	return true;
+}
+
+PLUGIN_EXPORT void PLUGIN_CALL Unload()
+{
+	CConsole::Get()->Output("%s plugin v%s unloaded.", PLUGIN_NAME, PLUGIN_VERSION);
+
+	CPawn::Destroy();
+	CConsole::Destroy();
+	CTimer::Destroy();
+	CTime::Destroy();
+	CNatives::Destroy();
+	CHook::Destroy();
+}
+
+PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx)
+{
+	CNatives::Get()->Register(amx);
+	CHook::Get()->Apply(amx);
+	return AMX_ERR_NONE;
+}
+
+PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx)
+{
+	CTimer::Get()->KillAll(amx);
+	return AMX_ERR_NONE;
 }
 
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
@@ -40,31 +83,7 @@ PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
 	return SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES | SUPPORTS_PROCESS_TICK;
 }
 
-PLUGIN_EXPORT void PLUGIN_CALL Unload()
+PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
-	core->getInternal()->Output("%s plugin v%s unloaded.", PLUGIN_NAME, PLUGIN_VERSION);
-	core.reset();
-}
-
-PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
-{
-	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
-	core.reset(new Core(ppData[PLUGIN_DATA_LOGPRINTF]));
-	core->getInternal()->Output("  %s plugin v%s by %s loaded.", PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR);
-	return true;
-}
-
-PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx)
-{
-	core->getInterface()->Add(amx);
-	core->getNatives()->RegisterNatives(amx);
-	core->getHook()->Apply(amx);
-	return AMX_ERR_NONE;
-}
-
-PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx)
-{
-	core->getInterface()->KillAll(amx);
-	core->getInterface()->Remove(amx);
-	return AMX_ERR_NONE;
+	CTimer::Get()->Process();
 }

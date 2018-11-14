@@ -21,28 +21,42 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#ifndef MAIN_H_
-#define MAIN_H_
+#include "Pawn.h"
 
-/// Internal includes
-/// ----------------------------
+LWM::local_ptr<CPawn> PawnInstance;
 
+void CPawn::Initialize()
+{
+	PawnInstance.reset(new CPawn);
+}
 
+void CPawn::Destroy()
+{
+	PawnInstance.reset();
+}
 
-/// ----------------------------
+LWM::local_ptr<CPawn> CPawn::Get()
+{
+	return PawnInstance;
+}
 
-/// Internal SDK
-/// ----------------------------
+bool CPawn::Find(AMX *amx, const char *name)
+{
+	int index;
+	return (amx_FindPublic(amx, name, &index) == AMX_ERR_NONE);
+}
 
-#include <sdk/amx/amx.h>
-#include <sdk/plugincommon.h>
-
-/// ----------------------------
-
-#ifndef SET_BY_COMPILE
-  #define PLUGIN_NAME		"Timer Fix"
-  #define PLUGIN_VERSION	"1.06"
-  #define PLUGIN_AUTHOR		"KashCherry"
-#endif
-
-#endif
+bool CPawn::Execute(AMX *amx, const char *name, LocalParams params)
+{
+	int index;
+	if (!amx_FindPublic(amx, name, &index)) {
+		cell tmp, retval;
+		for (auto arrays : params.arrays) amx_PushArray(amx, &tmp, NULL, arrays.first, arrays.second);
+		for (auto strings : params.strings) amx_PushString(amx, &tmp, NULL, strings.c_str(), NULL, NULL);
+		for (auto integers : params.integers) amx_Push(amx, integers);
+		if (amx_Exec(amx, &retval, index) != AMX_ERR_NONE)
+			return false;
+		return true;
+	}
+	return false;
+}

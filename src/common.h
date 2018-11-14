@@ -21,30 +21,13 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#ifndef INTERNAL_H_
-#define INTERNAL_H_
+#ifndef __COMMON_H_
+#define __COMMON_H_
 
-/// Internal includes
-/// ---------------------------
+#include "sdk/amx/amx.h"
+#include "sdk/amx/amx2.h"
+#include "sdk/plugincommon.h"
 
-#include "main.h"
+#include "lwm/pointer.h"
 
-/// ---------------------------
-
-/// Local types
-typedef void(*logprintf_t)(const char *format, ...);
-
-class Internal
-{
-protected:
-	logprintf_t logprintf;
-
-public:
-	Internal(void *logprintf);
-
-	void Output(const char *format, ...);
-	void Log(const char *format, ...);
-
-};
-
-#endif
+#endif // __COMMON_H_

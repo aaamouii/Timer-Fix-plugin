@@ -21,19 +21,19 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#ifndef __HOOK_H_
-#define __HOOK_H_
+#ifndef __TIME_H_
+#define __TIME_H_
 
-#include "common.h"
+#include "Types.h"
 
-class CHook
+class CTime
 {
 public:
 	static void Initialize();
 	static void Destroy();
-	static LWM::local_ptr<CHook> Get();
+	static LWM::local_ptr<CTime> Get();
 
-	void Apply(AMX *amx);
+	SystemTime GetTime();
 };
 
-#endif // __HOOK_H_
+#endif // __TIME_H_

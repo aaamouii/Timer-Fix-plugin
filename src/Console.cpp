@@ -21,44 +21,43 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-/// Internal includes
-/// -----------------------
+#include "Console.h"
 
-#include "internal.h"
+logprintf_t _logprintf;
+LWM::local_ptr<CConsole> ConsoleInstance;
 
-/// -----------------------
-
-/// External includes
-/// -----------------------
-
-#include <assert.h>
-#include <stdarg.h>
-#include <stdio.h>
-
-/// -----------------------
-
-Internal::Internal(void *logprintf)
+void CConsole::Initialize(logprintf_t logprintf)
 {
-	this->logprintf = (logprintf_t)logprintf;
-	assert(this->logprintf != nullptr);
+	ConsoleInstance.reset(new CConsole);
+	_logprintf = logprintf;
 }
 
-void Internal::Output(const char *format, ...)
+void CConsole::Destroy()
 {
-	char buffer[256];
+	ConsoleInstance.reset();
+}
+
+LWM::local_ptr<CConsole> CConsole::Get()
+{
+	return ConsoleInstance;
+}
+
+void CConsole::Output(const char *format, ...)
+{
+	char buffer[512];
 	va_list va_args;
 	va_start(va_args, format);
 	vsnprintf(buffer, sizeof(buffer), format, va_args);
 	va_end(va_args);
-	return logprintf(buffer);
+	return _logprintf(buffer);
 }
 
-void Internal::Log(const char *format, ...)
+void CConsole::Log(const char *format, ...)
 {
-	char buffer[256];
+	char buffer[512];
 	va_list va_args;
 	va_start(va_args, format);
 	vsnprintf(buffer, sizeof(buffer), format, va_args);
 	va_end(va_args);
-	return logprintf("[plugin.timerfix] %s", buffer);
+	return _logprintf("[timerfix.plugin] %s", buffer);
 }

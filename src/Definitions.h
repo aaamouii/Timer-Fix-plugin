@@ -21,42 +21,12 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#ifndef CORE_H_
-#define CORE_H_
+#ifndef __DEF_H_
+#define __DEF_H_
 
-/// Internal includes
-/// ----------------------------
-#include "internal.h"
-#include "interface.h"
-#include "natives.h"
-#include "hook.h"
-/// ----------------------------
+#define DECLARE_PAWN_NATIVE(native) static cell AMX_NATIVE_CALL n_##native##(AMX *amx, cell *params)
+#define DEFINE_PAWN_NATIVE(native) cell AMX_NATIVE_CALL CNatives::n_##native##(AMX *amx, cell *params)
 
-/// External includes
-/// ----------------------------
-#include <lwm/pointer.h>
-/// ----------------------------
+#define INVALID_TIMER_ID		(0xFFFF)
 
-using namespace LWM;
-
-class Core
-{
-private:
-	local_ptr<Internal> p_internal;
-	local_ptr<Interface> p_interface;
-	local_ptr<Natives> p_natives;
-	local_ptr<Hook> p_hook;
-
-public:
-
-	Core(void *logprintf);
-	~Core();
-
-	local_ptr<Internal> getInternal();
-	local_ptr<Interface> getInterface();
-	local_ptr<Natives> getNatives();
-	local_ptr<Hook> getHook();
-
-};
-
-#endif
+#endif // __DEF_H_

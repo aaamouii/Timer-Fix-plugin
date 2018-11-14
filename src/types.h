@@ -21,11 +21,32 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#ifndef TYPES_H_
-#define TYPES_H_
+#ifndef __TYPES_H_
+#define __TYPES_H_
 
+#include "common.h"
+#include <string>
+#include <deque>
+
+typedef void(*logprintf_t)(const char *format, ...);
+typedef long long SystemTime;
+typedef unsigned short TimerID;
+typedef std::string String;
 typedef bool Flag;
-typedef long long Time;
-typedef int TimerID;
+typedef struct {
+	std::deque<std::pair<cell *, cell>> arrays;
+	std::deque<std::string> strings;
+	std::deque<int> integers;
+} LocalParams;
+typedef struct {
+	TimerID timerId;
+	AMX *amx;
+	String callback;
+	int interval;
+	LocalParams params;
+	Flag repeat;
+	Flag destroyed;
+	SystemTime entryTime;
+} RemoteTimerStruct;
 
-#endif
+#endif // __TYPES_H_

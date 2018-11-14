@@ -21,11 +21,21 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#ifndef GETTIME_H_
-#define GETTIME_H_
+#ifndef __PAWN_H_
+#define __PAWN_H_
 
-#include "types.h"
+#include "common.h"
+#include "Types.h"
 
-Time GetTime();
+class CPawn
+{
+public:
+	static void Initialize();
+	static void Destroy();
+	static LWM::local_ptr<CPawn> Get();
 
-#endif
+	bool Find(AMX *amx, const char *name);
+	bool Execute(AMX *amx, const char *name, LocalParams params);
+};
+
+#endif // __PAWN_H_

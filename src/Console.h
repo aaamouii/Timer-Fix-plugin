@@ -21,34 +21,24 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#ifndef INTERFACE_H_
-#define INTERFACE_H_
+#ifndef __CONSOLE_H_
+#define __CONSOLE_H_
 
-#include "main.h"
-#include "timer.h"
+#include "Types.h"
 
-#include <map>
+#include <stdarg.h>
+#include <iostream>
 
-class Interface
+class CConsole
 {
-private:
-	std::map<AMX *, Timer> local_timer_map;
-
 public:
-	void Add(AMX *amx);
-	void Remove(AMX *amx);
+	static void Initialize(logprintf_t logprintf);
+	static void Destroy();
+	static LWM::local_ptr<CConsole> Get();
 
-	void startUpdateForAll();
-
-	int Create(AMX *amx, const char *callback, int interval, bool repeat);
-	int CreateEx(AMX *amx, const char *callback, int interval, bool repeat, cell *params, const char *format, int offset);
-	int Kill(AMX *amx, int timerid);
-	void KillAll(AMX *amx);
-	int IsValid(AMX *amx, int timerid);
-	int SetInterval(AMX *amx, int timerid, int interval);
-	int GetInterval(AMX *amx, int timerid);
-	int GetRemaining(AMX *amx, int timerid);
+	void Output(const char *format, ...);
+	void Log(const char *format, ...);
 
 };
 
-#endif
+#endif // __CONSOLE_H_

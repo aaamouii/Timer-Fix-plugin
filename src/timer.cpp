@@ -21,79 +21,101 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-/// Internal includes
-/// ----------------------------
-#include "timer.h"
-#include "core.h"
-#include "gettime.h"
-/// ----------------------------
+#include "Timer.h"
+#include "Console.h"
+#include "Definitions.h"
+#include "Time.h"
+#include "Pawn.h"
 
-/// External includes
-/// ----------------------------
-#include <unordered_map>
-/// ----------------------------
+LWM::local_ptr<CTimer> TimerInstance;
 
-extern local_ptr<Core> core;
-
-std::unordered_map<int, timer_type *> timer_list;
-int gTimerID;
-
-Timer::Timer()
+void CTimer::Initialize()
 {
-	gTimerID = 0;
+	TimerInstance.reset(new CTimer);
 }
 
-Timer::~Timer()
+void CTimer::Destroy()
 {
-	gTimerID = 0;
+	TimerInstance.reset();
 }
 
-int Timer::New(const char *callback, int interval, bool repeat)
+LWM::local_ptr<CTimer> CTimer::Get()
 {
-	timer_type *t = new timer_type;
-	if (!t)
-	{
-		core->getInternal()->Log("SetTimer: cannot allocate memory.");
-		return 0;
+	return TimerInstance;
+}
+
+TimerID CTimer::New(AMX *amx, const char *callback, int interval, Flag repeat)
+{
+	RemoteTimerStruct *remoteTimer = new RemoteTimerStruct;
+	if (!remoteTimer) {
+		CConsole::Get()->Log("cannot allocate memory");
+		return INVALID_TIMER_ID;
 	}
 
-	if (interval < 1)
-		interval = 1;
-
-	if (gTimerID > 0xFFFFFF)
-		core->getInternal()->Log("warning: you created too many timers");
-
-	gTimerID++;
-	t->callback_name = callback;
-	t->interval = interval;
-	t->repeat = repeat;
-	t->is_destroyed = false;
-	t->entry_point = GetTime();
-
-	timer_list.insert(std::pair<int, timer_type *>(gTimerID, t));
-	return gTimerID;
-}
-
-int Timer::NewEx(AMX *amx, const char *callback, int interval, bool repeat, cell *params, const char *format, int offset)
-{
-	timer_type *t = new timer_type;
-	if (!t)
-	{
-		core->getInternal()->Log("SetTimer: cannot allocate memory.");
-		return 0;
+	if (currentId >= 0xFFFF) {
+		delete remoteTimer;
+		CConsole::Get()->Log("limit reached");
+		return INVALID_TIMER_ID;
 	}
 
-	if (interval < 1)
-		interval = 1;
+	if (CPawn::Get()->Find(amx, callback) == false) {
+		delete remoteTimer;
+		CConsole::Get()->Log("cannot find public with name \"%s\"", callback);
+		return INVALID_TIMER_ID;
+	}
 
-	if(gTimerID > 0xFFFFFF)
-		core->getInternal()->Log("warning: you created too many timers");
+	currentId++;
 
-	gTimerID++;
-	t->callback_name = callback;
-	t->interval = interval;
-	t->repeat = repeat;
-	t->is_destroyed = false;
+	remoteTimer->amx = amx;
+	remoteTimer->timerId = currentId;
+	remoteTimer->callback = callback;
+	
+	if (interval <= 0)
+		remoteTimer->interval = 1;
+	else
+		remoteTimer->interval = interval;
+
+	remoteTimer->destroyed = false;
+	remoteTimer->repeat = repeat;
+
+	remoteTimer->entryTime = CTime::Get()->GetTime();
+	remoteTimerList.insert(std::pair<TimerID, RemoteTimerStruct *>(currentId, remoteTimer));
+	return currentId;
+}
+
+TimerID CTimer::NewEx(AMX *amx, const char *callback, int interval, bool repeat, cell *params, const char *format, int offset)
+{
+	RemoteTimerStruct *remoteTimer = new RemoteTimerStruct;
+	if (!remoteTimer) {
+		CConsole::Get()->Log("cannot allocate memory");
+		return INVALID_TIMER_ID;
+	}
+
+	if (currentId >= 0xFFFF) {
+		delete remoteTimer;
+		CConsole::Get()->Log("limit reached");
+		return INVALID_TIMER_ID;
+	}
+
+	if (CPawn::Get()->Find(amx, callback) == false) {
+		delete remoteTimer;
+		CConsole::Get()->Log("cannot find public with name \"%s\"", callback);
+		return INVALID_TIMER_ID;
+	}
+
+	currentId++;
+
+	remoteTimer->amx = amx;
+	remoteTimer->timerId = currentId;
+	remoteTimer->callback = callback;
+
+	if (interval <= 0)
+		remoteTimer->interval = 1;
+	else
+		remoteTimer->interval = interval;
+
+	remoteTimer->destroyed = false;
+	remoteTimer->repeat = repeat;
 
 	int j = strlen(format);
 	while (j)
@@ -110,14 +132,14 @@ int Timer::NewEx(AMX *amx, const char *callback, int interval, bool repeat, cell
 			if (arr != NULL)
 			{
 				memcpy(arr, ptr_arr, (*ptr_len * sizeof(cell)));
-				t->params.arrays.push_back(std::pair<cell *, cell>(arr, *ptr_len));
+				remoteTimer->params.arrays.push_back(std::pair<cell *, cell>(arr, *ptr_len));
 			}
 			break;
 		case 's':
 		case 'S':
 			char *amx_string;
 			amx_StrParam(amx, params[j + offset], amx_string);
-			t->params.strings.push_back(amx_string);
+			remoteTimer->params.strings.push_back(amx_string);
 			break;
 		case 'f':
 		case 'F':
@@ -131,127 +153,108 @@ int Timer::NewEx(AMX *amx, const char *callback, int interval, bool repeat, cell
 		case 'B':
 			cell * amx_integer;
 			amx_GetAddr(amx, params[j + offset], &amx_integer);
-			t->params.integers.push_back(*amx_integer);
+			remoteTimer->params.integers.push_back(*amx_integer);
 			break;
 		default:
-			core->getInternal()->Log("SetTimerEx: unknown format specifer");
+			CConsole::Get()->Log("SetTimerEx: unknown format specifer");
 			break;
 		}
 	}
 
-	t->entry_point = GetTime();
-	timer_list.insert(std::pair<int, timer_type *>(gTimerID, t));
-	return gTimerID;
+	remoteTimer->entryTime = CTime::Get()->GetTime();
+	remoteTimerList.insert(std::pair<TimerID, RemoteTimerStruct *>(currentId, remoteTimer));
+	return currentId;
 }
 
-int Timer::Kill(int timerid)
+int CTimer::Kill(TimerID timerId)
 {
-	std::unordered_map<int, timer_type *>::const_iterator t = timer_list.find(timerid);
-	if (t != timer_list.end())
-	{
-		t->second->is_destroyed = true;
+	auto p = remoteTimerList.find(timerId);
+	if (p != remoteTimerList.end()) {
+		p->second->destroyed = true;
 		return 1;
 	}
 	return 0;
 }
 
-void Timer::KillAll()
+void CTimer::KillAll(AMX *amx)
 {
-	for (std::unordered_map<int, timer_type *>::const_iterator t = timer_list.begin(); t != timer_list.end();)
-	{
-		for (auto arrays : t->second->params.arrays) free(arrays.first);
-		t->second->params.arrays.clear();
-		t->second->params.strings.clear();
-		t->second->params.integers.clear();
-		delete t->second;
-		timer_list.erase(t++);
-	}
-}
-
-int Timer::IsValid(int timerid)
-{
-	std::unordered_map<int, timer_type *>::const_iterator t = timer_list.find(timerid);
-	return (t != timer_list.end());
-}
-
-int Timer::SetInterval(int timerid, int interval)
-{
-	std::unordered_map<int, timer_type *>::iterator t = timer_list.find(timerid);
-	if (t != timer_list.end())
-	{
-		if (interval < 1) interval = 1;
-		t->second->interval = interval;
-		return 1;
-	}
-	return 0;
-}
-
-int Timer::GetInterval(int timerid)
-{
-	std::unordered_map<int, timer_type *>::iterator t = timer_list.find(timerid);
-	if (t != timer_list.end())
-	{
-		return (int)t->second->interval;
-	}
-	return -1;
-}
-
-int Timer::GetRemaining(int timerid)
-{
-	std::unordered_map<int, timer_type *>::iterator t = timer_list.find(timerid);
-	if (t != timer_list.end())
-	{
-		return (int)(t->second->interval - (GetTime() - t->second->entry_point));
-	}
-	return -1;
-}
-
-void Timer::Process(AMX *amx)
-{
-	for (std::unordered_map<int, timer_type *>::const_iterator t = timer_list.begin(); t != timer_list.end();)
-	{
-		if (t->second->is_destroyed)
-		{
-			for (auto arrays : t->second->params.arrays) free(arrays.first);
-			t->second->params.arrays.clear();
-			t->second->params.strings.clear();
-			t->second->params.integers.clear();
-			delete t->second;
-			timer_list.erase(t++);
+	for (auto p = remoteTimerList.begin(); p != remoteTimerList.end();) {
+		if (p->second->amx == amx) {
+			for (auto arrays : p->second->params.arrays) free(arrays.first);
+			p->second->params.arrays.clear();
+			p->second->params.strings.clear();
+			p->second->params.integers.clear();
+			delete p->second;
+			remoteTimerList.erase(p++);
 			continue;
 		}
-		if ((GetTime() - t->second->entry_point) >= t->second->interval)
-		{
-			cell tmp, retval;
-			int idx;
-			if (amx_FindPublic(amx, t->second->callback_name.c_str(), &idx) == AMX_ERR_NONE)
-			{
-				for (auto arrays : t->second->params.arrays) amx_PushArray(amx, &tmp, NULL, arrays.first, arrays.second);
-				for (auto strings : t->second->params.strings) amx_PushString(amx, &tmp, NULL, strings.c_str(), NULL, NULL);
-				for (auto integers : t->second->params.integers) amx_Push(amx, integers);
-				if (amx_Exec(amx, &retval, idx) != AMX_ERR_NONE)
-				{
-					core->getInternal()->Log("error: cannot execute callback with name \"%s\"", t->second->callback_name.c_str());
-				}
-			}
+		p++;
+	}
+}
 
-			if (t->second->repeat)
-			{
-				t->second->entry_point = GetTime();
-				t++;
+int CTimer::IsValid(int timerId)
+{
+	return (remoteTimerList.find(timerId) != remoteTimerList.end());
+}
+
+int CTimer::GetInterval(int timerId)
+{
+	auto p = remoteTimerList.find(timerId);
+	if (p != remoteTimerList.end()) {
+		return p->second->interval;
+	}
+	return -1;
+}
+
+int CTimer::SetInterval(int timerId, int interval)
+{
+	auto p = remoteTimerList.find(timerId);
+	if (p != remoteTimerList.end()) {
+		p->second->interval = (interval <= 0) ? 1 : interval;
+		return 1;
+	}
+	return 0;
+}
+
+int CTimer::GetRemaining(int timerId)
+{
+	auto p = remoteTimerList.find(timerId);
+	if (p != remoteTimerList.end()) {
+		return (p->second->interval - (CTime::Get()->GetTime() - p->second->entryTime));
+	}
+	return -1;
+}
+
+void CTimer::Process()
+{
+	for (auto p = remoteTimerList.begin(); p != remoteTimerList.end();) {
+		if (p->second->destroyed) {
+			for (auto arrays : p->second->params.arrays) free(arrays.first);
+			p->second->params.arrays.clear();
+			p->second->params.strings.clear();
+			p->second->params.integers.clear();
+			delete p->second;
+			remoteTimerList.erase(p++);
+			continue;
+		}
+		if ((CTime::Get()->GetTime() - p->second->entryTime) >= p->second->interval) {
+			if (CPawn::Get()->Execute(p->second->amx, p->second->callback.c_str(), p->second->params) == false)
+				CConsole::Get()->Log("cannot execute callback with name \"%s\"", p->second->callback.c_str());
+
+			if (p->second->repeat) {
+				p->second->entryTime = CTime::Get()->GetTime();
+				p++;
 				continue;
-			}
-			else
-			{
-				for (auto arrays : t->second->params.arrays) free(arrays.first);
-				t->second->params.arrays.clear();
-				t->second->params.strings.clear();
-				t->second->params.integers.clear();
-				delete t->second;
-				timer_list.erase(t++);
+			} else {
+				for (auto arrays : p->second->params.arrays) free(arrays.first);
+				p->second->params.arrays.clear();
+				p->second->params.strings.clear();
+				p->second->params.integers.clear();
+				delete p->second;
+				remoteTimerList.erase(p++);
 				continue;
 			}
 		}
-		t++;
+		p++;
 	}
 }

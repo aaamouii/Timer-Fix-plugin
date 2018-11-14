@@ -23,7 +23,7 @@
 namespace LWM
 {
 
-	template<class T>
+	template<typename T>
 	class local_ptr
 	{
 	private:

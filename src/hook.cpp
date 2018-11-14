@@ -21,17 +21,29 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#include "hook.h"
-#include "core.h"
+#include "Hook.h"
+#include "Natives.h"
 
-#include <sdk/amx/amx2.h>
-#include <assert.h>
+LWM::local_ptr<CHook> HookInstance;
 
-extern local_ptr<Core> core;
-
-void Hook::Apply(AMX *amx)
+void CHook::Initialize()
 {
-	amx_Redirect(amx, "SetTimer", reinterpret_cast<ucell>(core->getNatives()->n_SetTimer), NULL);
-	amx_Redirect(amx, "SetTimerEx", reinterpret_cast<ucell>(core->getNatives()->n_SetTimerEx), NULL);
-	amx_Redirect(amx, "KillTimer", reinterpret_cast<ucell>(core->getNatives()->n_KillTimer), NULL);
+	HookInstance.reset(new CHook);
+}
+
+void CHook::Destroy()
+{
+	HookInstance.reset();
+}
+
+LWM::local_ptr<CHook> CHook::Get()
+{
+	return HookInstance;
+}
+
+void CHook::Apply(AMX *amx)
+{
+	amx_Redirect(amx, "SetTimer", (ucell)CNatives::Get()->n_SetTimer, NULL);
+	amx_Redirect(amx, "SetTimerEx", (ucell)CNatives::Get()->n_SetTimerEx, NULL);
+	amx_Redirect(amx, "KillTimer", (ucell)CNatives::Get()->n_KillTimer, NULL);
 }

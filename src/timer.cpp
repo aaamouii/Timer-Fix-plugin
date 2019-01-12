@@ -52,12 +52,6 @@ TimerID CTimer::New(AMX *amx, const char *callback, int interval, Flag repeat)
 		return INVALID_TIMER_ID;
 	}
 
-	if (currentId >= 0xFFFF) {
-		delete remoteTimer;
-		CConsole::Get()->Log("limit reached");
-		return INVALID_TIMER_ID;
-	}
-
 	if (CPawn::Get()->Find(amx, callback) == false) {
 		delete remoteTimer;
 		CConsole::Get()->Log("cannot find public with name \"%s\"", callback);
@@ -88,12 +82,6 @@ TimerID CTimer::NewEx(AMX *amx, const char *callback, int interval, bool repeat,
 	RemoteTimerStruct *remoteTimer = new RemoteTimerStruct;
 	if (!remoteTimer) {
 		CConsole::Get()->Log("cannot allocate memory");
-		return INVALID_TIMER_ID;
-	}
-
-	if (currentId >= 0xFFFF) {
-		delete remoteTimer;
-		CConsole::Get()->Log("limit reached");
 		return INVALID_TIMER_ID;
 	}
 

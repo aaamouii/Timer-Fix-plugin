@@ -12,7 +12,7 @@
 #include <timerfix>
 //	Note: To switch between default timers and timerfix, you must disable(or enable) timerfix plugin.
 
-new _gTimerTickCount = 0;
+new _gTimerTickCount;
 
 forward TimerCallback();
 public TimerCallback()

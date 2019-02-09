@@ -30,7 +30,7 @@
 
 typedef void(*logprintf_t)(const char *format, ...);
 typedef long long SystemTime;
-typedef unsigned short TimerID;
+typedef int TimerID;
 typedef std::string String;
 typedef bool Flag;
 typedef struct {

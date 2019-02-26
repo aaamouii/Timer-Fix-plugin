@@ -3,7 +3,7 @@
     "repo": "Timer-Fix-plugin",
     "resources": [
         {
-            "name": "^timerfix-(.+)-windows.zip$",
+            "name": "^timerfix-(.+)-win32.zip$",
             "platform": "windows",
             "archive": true,
             "includes": [""],

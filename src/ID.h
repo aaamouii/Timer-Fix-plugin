@@ -21,53 +21,30 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#include "Time.h"
+#ifndef __ID_H_
+#define __ID_H_
 
-LWM::local_ptr<CTime> TimeInstance;
+#include "common.h"
+#include "Types.h"
+#include <queue>
 
-#ifdef _WIN32
-  #include <windows.h>
-#else
-  #include <sys/time.h>
-  #include <unistd.h>
-#endif
-
-void CTime::Initialize()
+class CID
 {
-	TimeInstance.reset(new CTime);
-}
+private:
+	TimerID highest_id;
+	std::queue<TimerID> removed_ids;
 
-void CTime::Destroy()
-{
-	TimeInstance.reset();
-}
+public:
+	static void Initialize();
+	static void Destroy();
+	static LWM::local_ptr<CID> Get();
 
-LWM::local_ptr<CTime> CTime::Get()
-{
-	return TimeInstance;
-}
+	CID();
+	~CID();
 
-SystemTime CTime::GetTime()
-{
-#ifdef _WIN32
-	SystemTime curTime;
-	LARGE_INTEGER PerfVal;
-	LARGE_INTEGER yo1;
+	TimerID Generate();
+	void Remove(TimerID id);
 
-	QueryPerformanceFrequency(&yo1);
-	QueryPerformanceCounter(&PerfVal);
+};
 
-	__int64 quotient, remainder;
-	quotient = ((PerfVal.QuadPart) / yo1.QuadPart);
-	remainder = ((PerfVal.QuadPart) % yo1.QuadPart);
-	curTime = (SystemTime)quotient*(SystemTime)1000000 + (remainder*(SystemTime)1000000 / yo1.QuadPart);
-	return (curTime / 1000);
-#else
-	timeval tp;
-	SystemTime curTime;
-	gettimeofday(&tp, 0);
-
-	curTime = (tp.tv_sec) * (SystemTime)1000000 + (tp.tv_usec);
-	return (curTime / 1000);
-#endif
-}
+#endif // __ID_H_

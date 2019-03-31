@@ -1,7 +1,7 @@
 /*
 	MIT License
 
-	Copyright (c) 2018 Kash Cherry
+	Copyright (c) 2018-2019 Kash Cherry
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ class CTimer
 {
 private:
 	std::unordered_map<TimerID, RemoteTimerStruct *> remoteTimerList;
-	TimerID currentId;
+	//TimerID currentId;
 
 public:
 	static void Initialize();

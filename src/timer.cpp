@@ -1,7 +1,7 @@
 /*
 	MIT License
 
-	Copyright (c) 2018 Kash Cherry
+	Copyright (c) 2018-2019 Kash Cherry
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 #include "Definitions.h"
 #include "Time.h"
 #include "Pawn.h"
+#include "ID.h"
 
 LWM::local_ptr<CTimer> TimerInstance;
 
@@ -58,7 +59,7 @@ TimerID CTimer::New(AMX *amx, const char *callback, int interval, Flag repeat)
 		return INVALID_TIMER_ID;
 	}
 
-	currentId++;
+	TimerID currentId = CID::Get()->Generate();
 
 	remoteTimer->amx = amx;
 	remoteTimer->timerId = currentId;
@@ -91,7 +92,7 @@ TimerID CTimer::NewEx(AMX *amx, const char *callback, int interval, bool repeat,
 		return INVALID_TIMER_ID;
 	}
 
-	currentId++;
+	TimerID currentId = CID::Get()->Generate();
 
 	remoteTimer->amx = amx;
 	remoteTimer->timerId = currentId;
@@ -217,6 +218,7 @@ void CTimer::Process()
 {
 	for (auto p = remoteTimerList.begin(); p != remoteTimerList.end();) {
 		if (p->second->destroyed) {
+			CID::Get()->Remove(p->second->timerId);
 			for (auto arrays : p->second->params.arrays) free(arrays.first);
 			p->second->params.arrays.clear();
 			p->second->params.strings.clear();
@@ -234,6 +236,7 @@ void CTimer::Process()
 				p++;
 				continue;
 			} else {
+				CID::Get()->Remove(p->second->timerId);
 				for (auto arrays : p->second->params.arrays) free(arrays.first);
 				p->second->params.arrays.clear();
 				p->second->params.strings.clear();

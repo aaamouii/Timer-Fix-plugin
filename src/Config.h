@@ -1,7 +1,7 @@
 /*
 	MIT License
 
-	Copyright (c) 2018 Kash Cherry
+	Copyright (c) 2018-2019 Kash Cherry
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 #define __CONFIG_H_
 
 constexpr auto PLUGIN_NAME = "Timer Fix";
-constexpr auto PLUGIN_VERSION = "1.0.7";
+constexpr auto PLUGIN_VERSION = "1.0.9";
 constexpr auto PLUGIN_AUTHOR = "KashCherry";
 
 #endif // __CONFIG_H_

@@ -1,7 +1,7 @@
 /*
 	MIT License
 
-	Copyright (c) 2018 Kash Cherry
+	Copyright (c) 2018-2019 Kash Cherry
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@
 #include "Timer.h"
 #include "Natives.h"
 #include "Hook.h"
+#include "ID.h"
 
 extern void *pAMXFunctions;
 logprintf_t logprintf;
@@ -47,6 +48,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	CTime::Initialize();
 	CNatives::Initialize();
 	CHook::Initialize();
+	CID::Initialize();
 
 	///	Present
 	CConsole::Get()->Output("  %s plugin v%s by %s loaded.", PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR);
@@ -63,6 +65,7 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 	CTime::Destroy();
 	CNatives::Destroy();
 	CHook::Destroy();
+	CID::Destroy();
 }
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx)

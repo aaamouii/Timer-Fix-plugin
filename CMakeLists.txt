@@ -23,7 +23,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(LINKER_FLAGS "-m32 -shared -O3 -static-libstdc++")
 
 	set(CMAKE_C_FLAGS "-m32 -O3 -w -Ilib")
-	set(CMAKE_CXX_FLAGS "-m32 -O3 -w -Ilib -std=c++11")
+	set(CMAKE_CXX_FLAGS "-m32 -O3 -w -Ilib -std=c++14")
 	set(CMAKE_SHARED_LINKER_FLAGS ${LINKER_FLAGS})	
 
 	set(CMAKE_CXX_COMPILER "/usr/bin/g++")

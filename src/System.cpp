@@ -1,18 +1,14 @@
 /*
 	MIT License
-
 	Copyright (c) 2018-2019 Kash Cherry
-
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,42 +17,27 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#include "Pawn.h"
 
-LWM::local_ptr<CPawn> PawnInstance;
+#include "System.h"
 
-void CPawn::Initialize()
+System::System()
 {
-	PawnInstance.reset(new CPawn);
+	m_pTimerManager = std::make_unique<TimerManager>();
+	m_pNatives = std::make_unique<Natives>();
 }
 
-void CPawn::Destroy()
+System::~System()
 {
-	PawnInstance.reset();
+	m_pTimerManager.reset();
+	m_pNatives.reset();
 }
 
-LWM::local_ptr<CPawn> CPawn::Get()
+TimerManager* System::GetTimerManager()
 {
-	return PawnInstance;
+	return m_pTimerManager.get();
 }
 
-bool CPawn::Find(AMX *amx, const char *name)
+Natives* System::GetNatives()
 {
-	int index;
-	return (amx_FindPublic(amx, name, &index) == AMX_ERR_NONE);
-}
-
-bool CPawn::Execute(AMX *amx, const char *name, LocalParams params)
-{
-	int index;
-	if (!amx_FindPublic(amx, name, &index)) {
-		cell tmp, retval;
-		for (auto arrays : params.arrays) amx_PushArray(amx, &tmp, NULL, arrays.first, arrays.second);
-		for (auto strings : params.strings) amx_PushString(amx, &tmp, NULL, strings.c_str(), NULL, NULL);
-		for (auto integers : params.integers) amx_Push(amx, integers);
-		if (amx_Exec(amx, &retval, index) != AMX_ERR_NONE)
-			return false;
-		return true;
-	}
-	return false;
+	return m_pNatives.get();
 }

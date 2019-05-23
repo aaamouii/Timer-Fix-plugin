@@ -1,18 +1,14 @@
 /*
 	MIT License
-
 	Copyright (c) 2018-2019 Kash Cherry
-
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,53 +17,33 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#include "Time.h"
 
-LWM::local_ptr<CTime> TimeInstance;
+#include "PawnString.h"
 
-#ifdef _WIN32
-  #include <windows.h>
-#else
-  #include <sys/time.h>
-  #include <unistd.h>
-#endif
+extern logprintf_t logprintf;
 
-void CTime::Initialize()
+PawnString::PawnString(AMX* amx, cell param)
 {
-	TimeInstance.reset(new CTime);
+	cell* addr;
+	if (amx_GetAddr(amx, param, &addr) == AMX_ERR_NONE)
+	{
+		int length;
+		if (amx_StrLen(addr, &length) == AMX_ERR_NONE)
+		{
+			length++;
+			char* str = new char[length];
+			amx_GetString(str, addr, 0, length);
+			m_sCharConversion = str;
+		}
+	}
 }
 
-void CTime::Destroy()
+PawnString::~PawnString()
 {
-	TimeInstance.reset();
+	m_sCharConversion.clear();
 }
 
-LWM::local_ptr<CTime> CTime::Get()
+std::string PawnString::get_instance()
 {
-	return TimeInstance;
-}
-
-SystemTime CTime::GetTime()
-{
-#ifdef _WIN32
-	SystemTime curTime;
-	LARGE_INTEGER PerfVal;
-	LARGE_INTEGER yo1;
-
-	QueryPerformanceFrequency(&yo1);
-	QueryPerformanceCounter(&PerfVal);
-
-	__int64 quotient, remainder;
-	quotient = ((PerfVal.QuadPart) / yo1.QuadPart);
-	remainder = ((PerfVal.QuadPart) % yo1.QuadPart);
-	curTime = (SystemTime)quotient*(SystemTime)1000000 + (remainder*(SystemTime)1000000 / yo1.QuadPart);
-	return (curTime / 1000);
-#else
-	timeval tp;
-	SystemTime curTime;
-	gettimeofday(&tp, 0);
-
-	curTime = (tp.tv_sec) * (SystemTime)1000000 + (tp.tv_usec);
-	return (curTime / 1000);
-#endif
+	return m_sCharConversion;
 }

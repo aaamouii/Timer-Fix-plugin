@@ -1,18 +1,14 @@
 /*
 	MIT License
-
 	Copyright (c) 2018-2019 Kash Cherry
-
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,24 +17,31 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#ifndef __CONSOLE_H_
-#define __CONSOLE_H_
 
-#include "Types.h"
+#pragma once
 
-#include <stdarg.h>
-#include <iostream>
+#include "Timer.h"
+#include "FreeSlotManager.h"
+#include "Logic.h"
+#include <map>
 
-class CConsole
+class TimerManager
 {
+private:
+	std::map<int32_t, Timer*> m_mapTimerStack;
+	std::unique_ptr<FreeSlotManager> m_pFreeSlotManager;
+
 public:
-	static void Initialize(logprintf_t logprintf);
-	static void Destroy();
-	static LWM::local_ptr<CConsole> Get();
+	TimerManager();
+	~TimerManager();
 
-	void Output(const char *format, ...);
-	void Log(const char *format, ...);
-
+	int32_t AddTimer(AMX* amx, const char* name, int32_t interval, bool repeat);
+	int32_t AddTimerEx(AMX* amx, const char* name, int32_t interval, bool repeat, const char* format, cell* params);
+	bool KillTimer(int32_t timerid);
+	void KillAll(AMX* amx);
+	bool IsValidTimer(int32_t timerid);
+	int32_t GetTimerInterval(int32_t timerid);
+	bool SetTimerInterval(int32_t timerid, int32_t interval);
+	int32_t GetTimerRemainingTime(int32_t timerid);
+	void Process();
 };
-
-#endif // __CONSOLE_H_

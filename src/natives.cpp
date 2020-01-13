@@ -1,125 +1,242 @@
-/*
-	MIT License
-	Copyright (c) 2018-2019 Kash Cherry
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-	The above copyright notice and this permission notice shall be included in all
-	copies or substantial portions of the Software.
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
-*/
+// -----------------------------------------------------------------------------------
+// Timer Fix plugin for San Andreas Multiplayer
+// Copyright (c) 2018-2020, KashCherry
+// -----------------------------------------------------------------------------------
+#include "natives.h"
+#include "CStorage.h"
 
-#include "Natives.h"
-#include "System.h"
-#include "PawnString.h"
-
-#define BYTES_TO_CELLS(bytes)				(cell)(bytes/sizeof(cell))
-#define CELLS_TO_BYTES(cells)				(bytes*sizeof(cell))
-#define MAKE_OFFSET(cells,offset)			(cells + offset * sizeof(cell))
-
-#define INVALID_TIMER_ID					(0)
-
+extern bool bLoadedCorrectly;
+#define BYTES_TO_CELLS(bytes)		(cell)(bytes/sizeof(cell))
 extern logprintf_t logprintf;
-extern std::unique_ptr<System> g_pSystem;
 
-bool CheckNativeParamsForDefinedCount(cell count_of_params, cell waited_count, const char* func)
+cell AMX_NATIVE_CALL n_SetTimer(AMX* amx, cell* params)
 {
-	if (BYTES_TO_CELLS(count_of_params) == waited_count) return true;
-	logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be %d)", func, BYTES_TO_CELLS(count_of_params), waited_count);
-	return false;
-}
-
-bool CheckNativeParamsForUndefinedCount(cell count_of_params, cell waited_count, const char* func)
-{
-	if (BYTES_TO_CELLS(count_of_params) >= waited_count) return true;
-	logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be %d)", func, BYTES_TO_CELLS(count_of_params), waited_count);
-	return false;
-}
-
-cell AMX_NATIVE_CALL Natives::SetTimer(AMX* amx, cell* params)
-{
-	if (!CheckNativeParamsForDefinedCount(params[0], 3, __FUNCTION__)) return INVALID_TIMER_ID;
-	PawnString fname(amx, params[1]);
-	if (fname.get_instance().empty())
+	if (BYTES_TO_CELLS(params[0]) != 3)
 	{
-		logprintf("[timerfix.plugin] %s: cannot get string", __FUNCTION__);
-		return INVALID_TIMER_ID;
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 3)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
 	}
-	return g_pSystem->GetTimerManager()->AddTimer(amx, fname.get_instance().c_str(), params[2], !!params[3]);
+
+	char* funcname;
+	amx_StrParam(amx, params[1], funcname);
+
+	return CStorage::Get()->Add(amx, funcname, params[2], !!params[3]);
 }
 
-cell AMX_NATIVE_CALL Natives::SetTimerEx(AMX* amx, cell* params)
+cell AMX_NATIVE_CALL n_SetTimerEx(AMX* amx, cell* params)
 {
-	if (!CheckNativeParamsForUndefinedCount(params[0], 5, __FUNCTION__)) return INVALID_TIMER_ID;
-	PawnString fname(amx, params[1]);
-	if (fname.get_instance().empty())
+	if (BYTES_TO_CELLS(params[0]) < 5)
 	{
-		logprintf("[timerfix.plugin] %s: cannot get string", __FUNCTION__);
-		return INVALID_TIMER_ID;
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be greater than 5)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
 	}
-	PawnString format(amx, params[4]);
-	if (format.get_instance().empty())
+
+	char* funcname, * format;
+	amx_StrParam(amx, params[1], funcname);
+	amx_StrParam(amx, params[4], format);
+
+	return CStorage::Get()->Add(amx, funcname, params[2], !!params[3], format, &params[5]);
+}
+
+cell AMX_NATIVE_CALL n_SetCustomTimer(AMX* amx, cell* params)
+{
+	if (BYTES_TO_CELLS(params[0]) != 4)
 	{
-		logprintf("[timerfix.plugin] %s: cannot get string", __FUNCTION__);
-		return INVALID_TIMER_ID;
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 4)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	};
+	char* funcname;
+	amx_StrParam(amx, params[1], funcname);
+
+	cell id = CStorage::Get()->Add(amx, funcname, params[2], true);
+	CTimer* pTimer = CStorage::Get()->GetById(id);
+	if (pTimer)
+	{
+		pTimer->SetDelay(params[3]);
+		// Just let it run forever.
+		if(params[4] != -1) pTimer->SetCount(params[4]);
 	}
-	return g_pSystem->GetTimerManager()->AddTimerEx(amx, fname.get_instance().c_str(), params[2], !!params[3], format.get_instance().c_str(), &params[5]);
+	return id;
 }
 
-cell AMX_NATIVE_CALL Natives::KillTimer(AMX* amx, cell* params)
+cell AMX_NATIVE_CALL n_SetCustomTimerEx(AMX* amx, cell* params)
 {
-	if (!CheckNativeParamsForDefinedCount(params[0], 1, __FUNCTION__)) return INVALID_TIMER_ID;
-	return g_pSystem->GetTimerManager()->KillTimer(params[1]);
+	if (BYTES_TO_CELLS(params[0]) < 6)
+	{
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be greater than 6)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	}
+
+	char* funcname, * format;
+	amx_StrParam(amx, params[1], funcname);
+	amx_StrParam(amx, params[5], format);
+
+	cell id = CStorage::Get()->Add(amx, funcname, params[2], true, format, &params[6]);
+	CTimer* pTimer = CStorage::Get()->GetById(id);
+	if (pTimer)
+	{
+		pTimer->SetDelay(params[3]);
+		if (params[4] != -1) pTimer->SetCount(params[4]);
+	}
+	return id;
 }
 
-cell AMX_NATIVE_CALL Natives::KillAllTimers(AMX* amx, cell* params)
+cell AMX_NATIVE_CALL n_KillTimer(AMX* amx, cell* params)
 {
-	g_pSystem->GetTimerManager()->KillAll(amx);
+	if (BYTES_TO_CELLS(params[0]) != 1)
+	{
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 1)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	}
+
+	CTimer* pTimer = CStorage::Get()->GetById(params[1]);
+	if (pTimer)
+	{
+		pTimer->Remove();
+		return 1;
+	}
+	return 0;
+}
+
+cell AMX_NATIVE_CALL n_KillAllTimers(AMX* amx, cell* params)
+{
+	for (std::map<cell, CTimer*>::iterator iter = CStorage::Get()->m_pTimerDataStorage.begin(); iter != CStorage::Get()->m_pTimerDataStorage.end(); iter++)
+	{
+		if (iter->second)
+		{
+			// We can't just remove all timers from the storage while processing script...
+			// So let the process function do it
+			iter->second->Remove();
+		}
+	}
 	return 1;
 }
 
-cell AMX_NATIVE_CALL Natives::IsValidTimer(AMX* amx, cell* params)
+cell AMX_NATIVE_CALL n_IsValidTimer(AMX* amx, cell* params)
 {
-	if (!CheckNativeParamsForDefinedCount(params[0], 1, __FUNCTION__)) return INVALID_TIMER_ID;
-	return g_pSystem->GetTimerManager()->IsValidTimer(params[1]);
+	if (BYTES_TO_CELLS(params[0]) != 1)
+	{
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 1)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	}
+	CTimer* pTimer = CStorage::Get()->GetById(params[1]);
+	return (pTimer) ? 1 : 0;
 }
 
-cell AMX_NATIVE_CALL Natives::GetTimerInterval(AMX* amx, cell* params)
+cell AMX_NATIVE_CALL n_SetTimerInterval(AMX* amx, cell* params)
 {
-	if (!CheckNativeParamsForDefinedCount(params[0], 1, __FUNCTION__)) return INVALID_TIMER_ID;
-	return g_pSystem->GetTimerManager()->GetTimerInterval(params[1]);
+	if (BYTES_TO_CELLS(params[0]) != 2)
+	{
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 1)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	}
+	CTimer* pTimer = CStorage::Get()->GetById(params[1]);
+	if (pTimer)
+	{
+		pTimer->SetInterval(params[2]);
+		return 1;
+	}
+	return 0;
 }
 
-cell AMX_NATIVE_CALL Natives::SetTimerInterval(AMX* amx, cell* params)
+cell AMX_NATIVE_CALL n_GetTimerInterval(AMX* amx, cell* params)
 {
-	if (!CheckNativeParamsForDefinedCount(params[0], 2, __FUNCTION__)) return INVALID_TIMER_ID;
-	return g_pSystem->GetTimerManager()->SetTimerInterval(params[1], params[2]);
+	if (BYTES_TO_CELLS(params[0]) != 1)
+	{
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 1)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	}
+	CTimer* pTimer = CStorage::Get()->GetById(params[1]);
+	if (pTimer)
+	{
+		return pTimer->GetInterval();
+	}
+	return -1;
 }
 
-cell AMX_NATIVE_CALL Natives::GetTimerRemainingTime(AMX* amx, cell* params)
+cell AMX_NATIVE_CALL n_GetTimerRemainingTime(AMX* amx, cell* params)
 {
-	if (!CheckNativeParamsForDefinedCount(params[0], 1, __FUNCTION__)) return INVALID_TIMER_ID;
-	return g_pSystem->GetTimerManager()->GetTimerRemainingTime(params[1]);
+	if (BYTES_TO_CELLS(params[0]) != 1)
+	{
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 1)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	}
+	CTimer* pTimer = CStorage::Get()->GetById(params[1]);
+	if (pTimer)
+	{
+		return pTimer->GetRemainingTime();
+	}
+	return -1;
 }
 
-int Natives::Register(AMX* amx)
+cell AMX_NATIVE_CALL n_PauseTimer(AMX* amx, cell* params)
 {
-	const AMX_NATIVE_INFO natives[] = {
-		{"KillAllTimers", Natives::KillAllTimers},
-		{"IsValidTimer", Natives::IsValidTimer},
-		{"GetTimerInterval", Natives::GetTimerInterval},
-		{"SetTimerInterval", Natives::SetTimerInterval},
-		{"GetTimerRemainingTime", Natives::GetTimerRemainingTime},
-		{NULL, NULL}
-	};
-	return amx_Register(amx, natives, -1);
+	if (BYTES_TO_CELLS(params[0]) != 1)
+	{
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 1)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	}
+
+	CTimer* pTimer = CStorage::Get()->GetById(params[1]);
+	if (pTimer)
+	{
+		pTimer->Pause();
+		return 1;
+	}
+	return 0;
+}
+
+cell AMX_NATIVE_CALL n_ContinueTimer(AMX* amx, cell* params)
+{
+	if (BYTES_TO_CELLS(params[0]) != 1)
+	{
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 1)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	}
+
+	CTimer* pTimer = CStorage::Get()->GetById(params[1]);
+	if (pTimer)
+	{
+		pTimer->Continue();
+		return 1;
+	}
+	return 0;
+}
+
+cell AMX_NATIVE_CALL n_AddTimerHandler(AMX* amx, cell* params)
+{
+	if (BYTES_TO_CELLS(params[0]) != 2)
+	{
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 1)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	}
+
+	CTimer* pTimer = CStorage::Get()->GetById(params[1]);
+	if (pTimer)
+	{
+		char* handler;
+		amx_StrParam(amx, params[2], handler);
+		pTimer->AddHandler(handler);
+		return 1;
+	}
+	return 0;
+}
+
+cell AMX_NATIVE_CALL n_RemoveTimerHandler(AMX* amx, cell* params)
+{
+	if (BYTES_TO_CELLS(params[0]) != 2)
+	{
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be 1)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		return 0;
+	}
+
+	CTimer* pTimer = CStorage::Get()->GetById(params[1]);
+	if (pTimer)
+	{
+		char* handler;
+		amx_StrParam(amx, params[2], handler);
+		pTimer->RemoveHandler(handler);
+		return 1;
+	}
+	return 0;
 }

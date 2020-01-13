@@ -1,38 +1,22 @@
-/*
-	MIT License
-	Copyright (c) 2018-2019 Kash Cherry
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-	The above copyright notice and this permission notice shall be included in all
-	copies or substantial portions of the Software.
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
-*/
-
+// -----------------------------------------------------------------------------------
+// Timer Fix plugin for San Andreas Multiplayer
+// Copyright (c) 2018-2020, KashCherry
+// -----------------------------------------------------------------------------------
 #pragma once
 
-#include "Logic.h"
+#include "plugin.h"
 
-class Natives
-{
-public:
-	static cell AMX_NATIVE_CALL SetTimer(AMX* amx, cell* params);
-	static cell AMX_NATIVE_CALL SetTimerEx(AMX* amx, cell* params);
-	static cell AMX_NATIVE_CALL KillTimer(AMX* amx, cell* params);
-	static cell AMX_NATIVE_CALL KillAllTimers(AMX* amx, cell* params);
-	static cell AMX_NATIVE_CALL IsValidTimer(AMX* amx, cell* params);
-	static cell AMX_NATIVE_CALL GetTimerInterval(AMX* amx, cell* params);
-	static cell AMX_NATIVE_CALL SetTimerInterval(AMX* amx, cell* params);
-	static cell AMX_NATIVE_CALL GetTimerRemainingTime(AMX* amx, cell* params);
-
-	int Register(AMX* amx);
-};
+cell AMX_NATIVE_CALL n_SetTimer(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_SetTimerEx(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_SetCustomTimer(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_SetCustomTimerEx(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_KillTimer(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_KillAllTimers(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_IsValidTimer(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_SetTimerInterval(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_GetTimerInterval(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_GetTimerRemainingTime(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_PauseTimer(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_ContinueTimer(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_AddTimerHandler(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_RemoveTimerHandler(AMX* amx, cell* params);

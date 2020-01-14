@@ -56,7 +56,8 @@ bool CServerHooks::Apply(AMX* amx)
 				std::map<std::string, bool>::iterator iter = m_pNativeDataStorage.find(GETNAME_SAFE(pHeader, pFunc));
 				if (iter != m_pNativeDataStorage.end())
 				{
-					m_pFunctionDataStorage.insert(std::make_pair(pFunc, (ucell)pFunc->address));
+					// Not used in current version.
+					//m_pFunctionDataStorage.insert(std::make_pair(pFunc, pFunc->address));
 					iter->second = true;
 					if (iter->first == "SetTimer")
 						pFunc->address = (ucell)n_SetTimer;
@@ -69,7 +70,7 @@ bool CServerHooks::Apply(AMX* amx)
 		}
 	}
 
-	return false;
+	return true;
 }
 
 bool CServerHooks::Restore(AMX* amx)

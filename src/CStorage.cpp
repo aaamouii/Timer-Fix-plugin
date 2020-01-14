@@ -78,3 +78,17 @@ CTimer* CStorage::GetById(cell timerid)
 	}
 	return nullptr;
 }
+
+void CStorage::Clear()
+{
+	if (m_pTimerDataStorage.empty() == false)
+	{
+		for (std::map<cell, CTimer*>::iterator iter = m_pTimerDataStorage.begin(); iter != m_pTimerDataStorage.end(); iter++)
+		{
+			if (iter->second)
+				delete iter->second;
+			iter->second = nullptr;
+		}
+	}
+	m_pTimerDataStorage.clear();
+}

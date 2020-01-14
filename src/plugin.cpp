@@ -26,7 +26,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void** ppData)
 
 PLUGIN_EXPORT void PLUGIN_CALL Unload()
 {
-	logprintf("Timer Fix v1.1.1 unloaded.");
+	logprintf("Timer Fix plugin v1.1.1 unloaded.");
 	bLoadedCorrectly = false;
 	
 	CServerHooks::Destroy();
@@ -70,7 +70,8 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX* amx)
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX* amx)
 {
-	CServerHooks::Get()->Restore(amx);
+	//CServerHooks::Get()->Restore(amx);
+	CStorage::Get()->Clear();
 	bLoadedCorrectly = false;
 	return AMX_ERR_NONE;
 }

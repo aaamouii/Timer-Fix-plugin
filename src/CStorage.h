@@ -23,4 +23,6 @@ public:
 	bool Remove(cell timerid);
 
 	CTimer* GetById(cell timerid);
+
+	void Clear();
 };

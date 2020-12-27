@@ -15,22 +15,23 @@
  * delay - the delay before the timer starts.
  * count - count of executions.
  */
-native SetCustomTimer(funcname[], interval, delay, count);
+native SetCustomTimer(const funcname[], interval, delay, count);
 
 /*
  * The same function but with argument passing.
  */
-native SetCustomTimerEx(funcname[], delay, count, const format[], {Float,_}:...);
+native SetCustomTimerEx(const funcname[], delay, count, const format[], {Float,_}:...);
 native KillAllTimers();
 native IsValidTimer(timerid);
 native GetTimerInterval(timerid);
 native SetTimerInterval(timerid, interval);
 native GetTimerRemainingTime(timerid);
+native GetCountOfRunningTimers();
 
 /*
  * Stops the timer but doesn't delete it.
  * Use the ContinueTimer() to start it again.
- * Note: the callback will execute after the time remaining before the call.
+ * Note: the callback will be executed after the time remaining before the call.
  */
 native PauseTimer(timerid);
 

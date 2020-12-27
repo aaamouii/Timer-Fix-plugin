@@ -9,10 +9,12 @@
 #include "CTimer.h"
 #include <map>
 
+typedef std::map<cell, CTimer*> TimerDataStorage_t;
+
 class CStorage : public CSingleton<CStorage>
 {
 public:
-	std::map<cell, CTimer*>  m_pTimerDataStorage;
+	TimerDataStorage_t  m_pTimerDataStorage;
 
 public:
 	CStorage();

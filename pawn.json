@@ -10,7 +10,7 @@
             "plugins": ["timerfix.dll"]
         },
         {
-            "name": "^timerfix-(.+)-linux.tar.gz$",
+            "name": "^timerfix-(.+)-debian10.tar.gz$",
             "platform": "linux",
             "archive": true,
             "includes": [""],

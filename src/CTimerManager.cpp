@@ -32,9 +32,11 @@ void CTimerManager::Process()
 			if (iter->second)
 				delete iter->second;
 			//CStorage::Get()->Remove(iter->first);
-			CStorage::Get()->m_pTimerDataStorage.erase(iter);
+			iter = CStorage::Get()->m_pTimerDataStorage.erase(iter);
 		}
-
-		iter++;
+		else
+		{
+			iter++;
+		}
 	}
 }

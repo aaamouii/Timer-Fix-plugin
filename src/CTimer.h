@@ -21,13 +21,22 @@ class CTimer
 private:
 	AMX* m_pAMX;
 	std::list<std::string> m_functionContext;
+
+	/*
+	 * 0x01 - repeat
+	 * 0x02 - removed
+	 * 0x04 - paused
+	 * 0x08 - count set
+	 * 0x10 - delayed
+	 */
 	unsigned char m_ucFlags;
+
 	cell m_iInterval;
 
 	cell m_iDelay;
 	int m_iCountOfExecutions;
 	int m_iCurrentCountOfExecutions;
-	
+
 	struct FunctionArgumentsStruct
 	{
 		std::vector<eParamType> vecParamTypes;
@@ -49,7 +58,7 @@ private:
 	TimeCounterStruct m_pTimeCounter;
 
 public:
-	CTimer(AMX *amx, const char* szFunctionName, cell interval, bool repeat);
+	CTimer(AMX* amx, const char* szFunctionName, cell interval, bool repeat);
 	CTimer(AMX* amx, const char* szFunctionName, cell interval, bool repeat, const char* szFormat, cell* params, cell timerid);
 	~CTimer();
 

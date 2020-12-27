@@ -6,6 +6,9 @@ if (CMAKE_VERSION VERSION_GREATER 3.1.3)
 endif ()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	if(NOT CMAKE_GENERATOR_PLATFORM STREQUAL "Win32")
+		message(FATAL_ERROR "Building for Windows requires -A Win32 flag. (cmake ./ -A Win32)")
+    endif()
 
 	add_definitions (-DWIN32 -D_WIN32 -D__STDC__)
 
@@ -30,7 +33,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_C_COMPILER "/usr/bin/gcc")
 	set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
-endif ()
+else ()
+	message(FATAL_ERROR "Sorry, but Timer Fix building supports only MSVC++ and GNU compilers")
+endif()
 
 include_directories (
 	${CMAKE_CURRENT_SOURCE_DIR}/src

@@ -9,7 +9,7 @@
 
 extern logprintf_t logprintf;
 
-CTimer::CTimer(AMX *amx, const char* szFunctionName, cell interval, bool repeat)
+CTimer::CTimer(AMX* amx, const char* szFunctionName, cell interval, bool repeat)
 {
 	m_functionContext.clear();
 	m_pAMX = amx;
@@ -36,7 +36,7 @@ CTimer::CTimer(AMX *amx, const char* szFunctionName, cell interval, bool repeat)
 	m_pTimeCounter.m_iSafeCounter = COSTime::Get()->Current();
 }
 
-CTimer::CTimer(AMX *amx, const char* szFunctionName, cell interval, bool repeat, const char* szFormat, cell* params, cell timerid)
+CTimer::CTimer(AMX* amx, const char* szFunctionName, cell interval, bool repeat, const char* szFormat, cell* params, cell timerid)
 {
 	m_functionContext.clear();
 	m_pAMX = amx;
@@ -116,7 +116,7 @@ CTimer::CTimer(AMX *amx, const char* szFunctionName, cell interval, bool repeat,
 			m_pFunctionArguments.vecParamTypes.push_back(PARAM_TYPE_DIGITAL);
 			break;
 		default:
-			logprintf("SetTimerEx: unknown format specifier has been passed ['%c']", szFormat[i]);
+			logprintf("[timerfix.plugin] SetTimerEx: unknown format specifier has been passed ['%c']", szFormat[i]);
 		}
 	}
 }
@@ -124,7 +124,7 @@ CTimer::CTimer(AMX *amx, const char* szFunctionName, cell interval, bool repeat,
 CTimer::~CTimer()
 {
 	m_functionContext.clear();
-	
+
 	m_pFunctionArguments.vecDigitals.clear();
 	m_pFunctionArguments.vecParamTypes.clear();
 	m_pFunctionArguments.vecStrings.clear();
@@ -151,9 +151,11 @@ void CTimer::Process()
 			m_pTimeCounter.m_iSafeCounter = COSTime::Get()->Current();
 		}
 	}
-
-	m_pTimeCounter.m_iLastReferenced += (COSTime::Get()->Current() - m_pTimeCounter.m_iSafeCounter);
-	m_pTimeCounter.m_iSafeCounter = COSTime::Get()->Current();
+	else
+	{
+		m_pTimeCounter.m_iLastReferenced += (COSTime::Get()->Current() - m_pTimeCounter.m_iSafeCounter);
+		m_pTimeCounter.m_iSafeCounter = COSTime::Get()->Current();
+	}
 
 	if (m_pTimeCounter.m_iLastReferenced >= m_pTimeCounter.m_iFinishTime)
 	{
@@ -179,26 +181,30 @@ void CTimer::Process()
 							array_iter--;
 							if (amx_PushArray(m_pAMX, &tmp, 0, m_pFunctionArguments.vecArrays[array_iter].first, m_pFunctionArguments.vecArrays[array_iter].second) != AMX_ERR_NONE)
 							{
-								logprintf("error while processing timer: cannot push array");
+								logprintf("[timerfix.plugin] Sorry, but I couldn't push array for function '%s'", function.c_str());
 							}
-
-							if (m_pFunctionArguments.trash == -1)
-								m_pFunctionArguments.trash = tmp;
+							else
+							{
+								if (m_pFunctionArguments.trash == -1)
+									m_pFunctionArguments.trash = tmp;
+							}
 							break;
 						case PARAM_TYPE_DIGITAL:
 							if (amx_Push(m_pAMX, m_pFunctionArguments.vecDigitals[--digitals_iter]) != AMX_ERR_NONE)
 							{
-								logprintf("error while processing timer: cannot push integer");
+								logprintf("[timerfix.plugin] Sorry, but I couldn't push integer for function '%s'", function.c_str());
 							}
 							break;
 						case PARAM_TYPE_STRING:
 							if (amx_PushString(m_pAMX, &tmp, 0, m_pFunctionArguments.vecStrings[--string_iter].c_str(), 0, 0) != AMX_ERR_NONE)
 							{
-								logprintf("error while processing timer: cannot push string");
+								logprintf("[timerfix.plugin] Sorry, but I couldn't push string for function '%s'", function.c_str());
 							}
-
-							if (m_pFunctionArguments.trash == -1)
-								m_pFunctionArguments.trash = tmp;
+							else
+							{
+								if (m_pFunctionArguments.trash == -1)
+									m_pFunctionArguments.trash = tmp;
+							}
 							break;
 						default:
 							// It seems like sometimes there's some trash and because of it timers stop
@@ -211,7 +217,7 @@ void CTimer::Process()
 				cell retval;
 				if (amx_Exec(m_pAMX, &retval, index) != AMX_ERR_NONE)
 				{
-					logprintf("error while processing timer: cannot execute public '%s'", function.c_str());
+					logprintf("[timerfix.plugin] Sorry, but I couldn't execute function '%s'", function.c_str());
 				}
 
 				if (m_pFunctionArguments.vecParamTypes.empty() == false)
@@ -243,6 +249,10 @@ void CTimer::Process()
 						Remove();
 					}
 				}
+			}
+			else
+			{
+				logprintf("[timerfix.plugin] Sorry, but I couldn't find function '%s'", function.c_str());
 			}
 		}
 	}

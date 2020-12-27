@@ -19,14 +19,14 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void** ppData)
 {
 	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
 	logprintf = reinterpret_cast<logprintf_t>(ppData[PLUGIN_DATA_LOGPRINTF]);
-	logprintf("  Timer Fix plugin v1.1.1 by KashCherry loaded.");
+	logprintf("  Timer Fix plugin v1.1.2 by KashCherry loaded.\n>> Note: plugin is no longer supported.");
 	bLoadedCorrectly = false;
 	return true;
 }
 
 PLUGIN_EXPORT void PLUGIN_CALL Unload()
 {
-	logprintf("Timer Fix plugin v1.1.1 unloaded.");
+	logprintf("Timer Fix plugin v1.1.2 unloaded.");
 	bLoadedCorrectly = false;
 	
 	CServerHooks::Destroy();
@@ -62,6 +62,7 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX* amx)
 		{ "ContinueTimer", n_ContinueTimer },
 		{ "AddTimerHandler", n_AddTimerHandler },
 		{ "RemoveTimerHandler", n_RemoveTimerHandler },
+		{ "GetCountOfRunningTimers", n_GetCountOfRunningTimers },
 		{ NULL, NULL }
 	};
 

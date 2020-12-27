@@ -27,7 +27,7 @@ cell AMX_NATIVE_CALL n_SetTimerEx(AMX* amx, cell* params)
 {
 	if (BYTES_TO_CELLS(params[0]) < 5)
 	{
-		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be greater than 5)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be greater than 4)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
 		return 0;
 	}
 
@@ -61,9 +61,9 @@ cell AMX_NATIVE_CALL n_SetCustomTimer(AMX* amx, cell* params)
 
 cell AMX_NATIVE_CALL n_SetCustomTimerEx(AMX* amx, cell* params)
 {
-	if (BYTES_TO_CELLS(params[0]) < 6)
+	if (BYTES_TO_CELLS(params[0]) < 5)
 	{
-		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be greater than 6)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
+		logprintf("[timerfix.plugin] %s: bad parameter count (count is %d, should be greater than 4)", __FUNCTION__, BYTES_TO_CELLS(params[0]));
 		return 0;
 	}
 
@@ -239,4 +239,9 @@ cell AMX_NATIVE_CALL n_RemoveTimerHandler(AMX* amx, cell* params)
 		return 1;
 	}
 	return 0;
+}
+
+cell AMX_NATIVE_CALL n_GetCountOfRunningTimers(AMX* amx, cell* params)
+{
+	return static_cast<cell>(CStorage::Get()->m_pTimerDataStorage.size());
 }

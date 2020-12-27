@@ -20,3 +20,4 @@ cell AMX_NATIVE_CALL n_PauseTimer(AMX* amx, cell* params);
 cell AMX_NATIVE_CALL n_ContinueTimer(AMX* amx, cell* params);
 cell AMX_NATIVE_CALL n_AddTimerHandler(AMX* amx, cell* params);
 cell AMX_NATIVE_CALL n_RemoveTimerHandler(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL n_GetCountOfRunningTimers(AMX* amx, cell* params);

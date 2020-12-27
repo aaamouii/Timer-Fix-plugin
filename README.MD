@@ -36,7 +36,7 @@ native SetCustomTimer(funcname[], interval, delay, count);
  * count - count of executions.
 
 ```Pawn
-native SetCustomTimerEx(funcname[], delay, count, const format[], {Float,_}:...);
+native SetCustomTimerEx(funcname[], interval, delay, count, const format[], {Float,_}:...);
 ```
 The same function but with argument passing.
 

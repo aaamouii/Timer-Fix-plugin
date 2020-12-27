@@ -20,7 +20,7 @@ native SetCustomTimer(const funcname[], interval, delay, count);
 /*
  * The same function but with argument passing.
  */
-native SetCustomTimerEx(const funcname[], delay, count, const format[], {Float,_}:...);
+native SetCustomTimerEx(const funcname[], interval, delay, count, const format[], {Float,_}:...);
 native KillAllTimers();
 native IsValidTimer(timerid);
 native GetTimerInterval(timerid);

@@ -28,30 +28,33 @@ main()
 ```
 
 ## Natives
- Replacement for a standart native function that includes additional parameters.
- * delay - the delay before the timer starts.
- * count - count of executions.
  ```Pawn
 native SetCustomTimer(funcname[], interval, delay, count);
 ```
+ Replacement for a standart native function that includes additional parameters.
+ * delay - the delay before the timer starts.
+ * count - count of executions.
 
-The same function but with argument passing.
 ```Pawn
 native SetCustomTimerEx(funcname[], delay, count, const format[], {Float,_}:...);
 ```
+The same function but with argument passing.
 
- Stops the timer but doesn't delete it.
- <br>Use the ContinueTimer() to start it again.
- * Note: the callback will be executed after the time remaining before the call.
  ```Pawn
 native PauseTimer(timerid);
 ```
+ Stops the timer but doesn't delete it.
+ <br>Use the ContinueTimer() to start it again.
+ * Note: the callback will be executed after the time remaining before the call.
 
-Continues the timer after pausing.
 ```Pawn
 native ContinueTimer(timerid);
 ```
+Continues the timer after pausing.
 
+```Pawn
+native AddTimerHandler(timerid, handler[]);
+```
  Adds the custom callback for timer.
 <br> For example:
 ```pawn
@@ -61,14 +64,11 @@ native ContinueTimer(timerid);
  The timer will execute both callbacks.
 
 * Note: arguments will also be passed to both functions.
-```Pawn
-native AddTimerHandler(timerid, handler[]);
-```
 
-Removes the added handler.
 ```Pawn
 native RemoveTimerHandler(timerid, handler[]);
 ```
+Removes the added handler.
 
 Another natives.
 ```Pawn

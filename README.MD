@@ -104,7 +104,7 @@ yum install gcc-multilib g++-multilib
 ```
 2. Clone this repository
 ```
-git clone --recursive https://github.com/KashCherry/Aisuru
+git clone --recursive https://github.com/KashCherry/Timer-Fix-plugin
 ```
 3. Generate project with CMake in this folder or create other one
 ```

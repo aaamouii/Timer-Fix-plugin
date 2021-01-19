@@ -34,11 +34,16 @@ native SetCustomTimer(funcname[], interval, delay, count);
  Replacement for a standart native function that includes additional parameters.
  * delay - the delay before the timer starts.
  * count - count of executions.
+ 
+ **Note:** if you want timer to repeat put -1 instead of `count`.<br>
+ Example: `SetCustomTimer("Test", 1000, 500, -1);`
 
 ```Pawn
 native SetCustomTimerEx(funcname[], interval, delay, count, const format[], {Float,_}:...);
 ```
-The same function but with argument passing.
+The same function but with argument passing.<br>
+**Note:** if you want timer to repeat put -1 instead of `count`.<br>
+ Example: `SetCustomTimerEx("Test", 1000, 500, -1, "i", 1);`
 
  ```Pawn
 native PauseTimer(timerid);

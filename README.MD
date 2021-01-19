@@ -29,7 +29,7 @@ main()
 
 ## Natives
  ```Pawn
-native SetCustomTimer(funcname[], interval, delay, count);
+native SetCustomTimer(const funcname[], interval, delay, count);
 ```
  Replacement for a standart native function that includes additional parameters.
  * delay - the delay before the timer starts.
@@ -39,7 +39,7 @@ native SetCustomTimer(funcname[], interval, delay, count);
  Example: `SetCustomTimer("Test", 1000, 500, -1);`
 
 ```Pawn
-native SetCustomTimerEx(funcname[], interval, delay, count, const format[], {Float,_}:...);
+native SetCustomTimerEx(const funcname[], interval, delay, count, const format[], {Float,_}:...);
 ```
 The same function but with argument passing.<br>
 **Note:** if you want timer to repeat put -1 instead of `count`.<br>
@@ -60,7 +60,7 @@ Continues the timer after pausing.
 ```Pawn
 native AddTimerHandler(timerid, handler[]);
 ```
- Adds the custom callback for timer.
+ Adds the custom callback for the timer.
 <br> For example:
 ```pawn
  new a = SetTimer("function_1");
@@ -68,7 +68,7 @@ native AddTimerHandler(timerid, handler[]);
 ```
  The timer will execute both callbacks.
 
-* Note: arguments will also be passed to both functions.
+* Note: arguments will be passed to both functions.
 
 ```Pawn
 native RemoveTimerHandler(timerid, handler[]);

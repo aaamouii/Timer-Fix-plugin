@@ -2,10 +2,10 @@
 // Timer Fix plugin for San Andreas Multiplayer
 // Copyright (c) 2018-2020, KashCherry
 // -----------------------------------------------------------------------------------
-#if defined _timerfix_included
+#if defined _timerfix_kashcherry_included
 	#endinput
 #endif
-#define _timerfix_included
+#define _timerfix_kashcherry_included
 // -----------------------------------------------------------------------------------
 #define INVALID_TIMER_ID		(0)
 // -----------------------------------------------------------------------------------

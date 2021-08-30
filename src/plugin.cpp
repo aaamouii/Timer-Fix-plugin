@@ -63,6 +63,7 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX* amx)
 		{ "AddTimerHandler", n_AddTimerHandler },
 		{ "RemoveTimerHandler", n_RemoveTimerHandler },
 		{ "GetCountOfRunningTimers", n_GetCountOfRunningTimers },
+		{ "GetTimerRemainingTime", n_GetTimerRemainingTime },
 		{ NULL, NULL }
 	};
 
